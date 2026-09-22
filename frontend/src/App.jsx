@@ -1,13 +1,23 @@
-import React from 'react';
-import Footer from './components/layout/Footer';
+import React from "react";
+import Navbar from "./components/layout/Navbar";
+import Footer from "./components/layout/Footer";
+
 import {ToastProvider} from "./context/ToastContext";
+import {AuthProvider} from "./context/AuthContext";
+import {CartProvider} from "./context/CartContext";
 
 export default function App() {
     return (
-        <ToastProvider>
-            <div>
-                <Footer />
-            </div>
-        </ToastProvider>
+        <AuthProvider>
+            <CartProvider>
+                <ToastProvider>
+                    <Navbar/>
+
+                    {/* Page content */}
+
+                    <Footer/>
+                </ToastProvider>
+            </CartProvider>
+        </AuthProvider>
     );
 }
