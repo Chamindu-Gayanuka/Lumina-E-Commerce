@@ -1,6 +1,5 @@
 import React, {useState} from "react";
 import {Link} from "react-router-dom";
-import {FaInstagram, FaTwitter, FaYoutube} from "react-icons/fa";
 import Button from "../ui/Button";
 import {useToast} from "../../context/ToastContext";
 
@@ -43,26 +42,11 @@ export default function Footer() {
         <footer className="mt-20 bg-ink-900 text-slate-300">
             <div className="lum-container grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.4fr]">
                 <div>
-                    <p className="text-3xl font-extrabold tracking-tight text-primary-400">Lumina</p>
+                    <p className="text-3xl font-extrabold tracking-tight text-teal-700">Lumina</p>
                     <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-400">
                         Your one-stop destination for premium products. Quality, style, and convenience in
                         every order.
                     </p>
-                    <div className="mt-5 flex gap-2.5">
-                        {[FaInstagram, FaTwitter, FaYoutube].map((Icon, i) => (
-                            // eslint-disable-next-line react/no-array-index-key
-                            <a
-                                key={i}
-                                href="https://example.com"
-                                rel="noreferrer"
-                                target="_blank"
-                                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-slate-300 transition-colors hover:bg-primary-600 hover:text-white"
-                                aria-label="Social link"
-                            >
-                                <Icon size={14}/>
-                            </a>
-                        ))}
-                    </div>
                 </div>
 
                 {COLS.map((col) => (
@@ -85,7 +69,7 @@ export default function Footer() {
                     <h3 className="text-base font-bold text-white">Stay Connected</h3>
                     <p className="mt-4 text-sm text-slate-400">Subscribe for exclusive offers</p>
                     <form onSubmit={subscribe}
-                          className="mt-3 flex max-w-sm overflow-hidden rounded-xl bg-white/10 ring-1 ring-white/10 focus-within:ring-primary-400">
+                          className="mt-3 flex max-w-sm overflow-hidden rounded-xl bg-white/10 ring-1 ring-white/10 focus-within:bg-cyan-700">
                         <input
                             type="email"
                             value={email}
@@ -98,9 +82,6 @@ export default function Footer() {
                             Join
                         </Button>
                     </form>
-                    <p className="mt-4 text-xs text-slate-500">
-                        Payments supported: Cash on Delivery (v1). Online payments coming soon.
-                    </p>
                 </div>
             </div>
 
