@@ -7,19 +7,19 @@ const COLS = [
     {
         title: "About",
         links: [
-            {label: "Our Story", to: "/"},
-            {label: "Careers", to: "/"},
-            {label: "Press", to: "/"},
-            {label: "Blog", to: "/"},
+            {label: "Our Story", to: "/our-story"},
+            {label: "Careers", to: "/careers"},
+            {label: "Press", to: "/press"},
+            {label: "Blog", to: "/blog"},
         ],
     },
     {
         title: "Help",
         links: [
-            {label: "Customer Service", to: "/"},
-            {label: "Returns", to: "/"},
-            {label: "Shipping Info", to: "/"},
-            {label: "Privacy Policy", to: "/"},
+            {label: "Customer Service", to: "/customer-service"},
+            {label: "Returns", to: "/returns"},
+            {label: "Shipping Info", to: "/shipping-info"},
+            {label: "Privacy Policy", to: "/privacy-policy"},
         ],
     },
 ];
