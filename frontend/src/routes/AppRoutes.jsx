@@ -21,6 +21,10 @@ import StorePage from "../pages/customer/StorePage";
 import Checkout from "../pages/customer/Checkout";
 import OrderConfirmation from "../pages/customer/OrderConfirmation";
 
+// Customer Account
+import MyOrders from "../pages/customer/account/MyOrders";
+import Addresses from "../pages/customer/account/Addresses";
+
 // Company & Help Pages
 import InfoPage from "../pages/info/InfoPage";
 
@@ -61,6 +65,8 @@ export default function AppRoutes() {
             <Route path={"/account"} element={<ProtectedRoute roles={["Customer"]}/>}>
                 <Route element={<CustomerLayout/>}>
                     <Route index element={<Home/>}/>
+                    <Route path={"orders"} element={<MyOrders/>}/>
+                    <Route path={"addresses"} element={<Addresses/>}/>
                 </Route>
             </Route>
 
