@@ -1,6 +1,16 @@
 import React from "react";
-import {FaChartLine, FaGear, FaGaugeHigh, FaBoxOpen, FaBoxesStacked, FaStore, FaTruckFast} from "react-icons/fa6";
+import {
+    FaChartLine,
+    FaGear,
+    FaGaugeHigh,
+    FaBoxOpen,
+    FaBoxesStacked,
+    FaStore,
+    FaTruckFast,
+} from "react-icons/fa6";
+
 import DashboardShell from "./DashboardShell";
+import Footer from "../components/layout/Footer";
 
 export const sellerNav = [
     {to: "/seller", end: true, label: "Dashboard", icon: <FaGaugeHigh size={14}/>},
@@ -9,9 +19,18 @@ export const sellerNav = [
     {to: "/seller/orders", label: "Orders", icon: <FaTruckFast size={14}/>},
     {to: "/seller/sales", label: "Sales Overview", icon: <FaChartLine size={14}/>},
     {to: "/seller/profile", label: "Store Profile", icon: <FaStore size={14}/>},
-    {to: "/seller/settings", label: "Settings", icon: <FaGear size={14}/>},
+    {
+        to: "/seller/settings", label: "Settings", icon: <FaGear size={14}/>,
+    },
 ];
 
 export default function SellerLayout() {
-    return <DashboardShell role="seller" navItems={sellerNav}/>;
+    return (
+        <div className="flex min-h-screen flex-col">
+            <div className="flex-1">
+                <DashboardShell role="seller" navItems={sellerNav}/>
+            </div>
+            <Footer/>
+        </div>
+    );
 }

@@ -83,7 +83,7 @@ export default function DashboardShell({role, navItems, footerExtra, children}) 
 
             <div className="border-t border-slate-100 px-5 py-4">
                 {user?.role !== "Customer" ? (
-                    <Link to="/"
+                    <Link to="/store/s1"
                           className="mb-3 flex items-center gap-2.5 text-sm font-semibold text-slate-500 hover:text-primary-700"
                           onClick={() => setDrawer(false)}>
                         <FaStore size={13}/> View storefront
