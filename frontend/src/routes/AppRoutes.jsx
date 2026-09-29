@@ -1,11 +1,12 @@
 import React from "react";
-import {Routes, Route} from "react-router-dom";
+import {Routes, Route, Navigate} from "react-router-dom";
 
 // Layouts
 import MainLayout from "../layouts/MainLayout";
 import CustomerLayout from "../layouts/CustomerLayout";
 import ProtectedRoute from "./ProtectedRoute";
 import SellerLayout from "../layouts/SellerLayout";
+import NotFoundLayout from "../layouts/NotFoundLayout";
 
 //  Authentication
 import Login from "../pages/auth/Login";
@@ -13,6 +14,7 @@ import Register from "../pages/auth/Register";
 import SellerRegister from "../pages/auth/SellerRegister";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
+import ProductDetails from "../pages/customer/ProductDetails";
 
 // Customer Routes
 import Home from "../pages/customer/Home";
@@ -21,6 +23,8 @@ import Cart from "../pages/customer/Cart";
 import StorePage from "../pages/customer/StorePage";
 import Checkout from "../pages/customer/Checkout";
 import OrderConfirmation from "../pages/customer/OrderConfirmation";
+import OrderDetails from "../pages/customer/account/OrderDetails";
+import OrderTracking from "../pages/customer/account/OrderTracking";
 
 // Customer Account
 import MyOrders from "../pages/customer/account/MyOrders";
@@ -30,12 +34,17 @@ import ChangePassword from "../pages/customer/account/ChangePassword";
 
 // Seller Routes
 import SellerDashboard from "../pages/seller/Dashboard";
+import SellerProducts from "../pages/seller/Products";
+import ProductForm from "../pages/seller/ProductForm";
+import SellerInventory from "../pages/seller/Inventory";
+import SellerOrders from "../pages/seller/Orders";
+import SellerSales from "../pages/seller/Sales";
+import SellerProfile from "../pages/seller/Profile";
+import SellerSettings from "../pages/seller/Settings";
+import SellerOrderDetails from "../pages/seller/OrderDetails";
 
 // Company & Help Pages
 import InfoPage from "../pages/info/InfoPage";
-
-// Errors
-import NotFound from "../pages/errors/NotFound";
 
 export default function AppRoutes() {
     return (
@@ -47,6 +56,7 @@ export default function AppRoutes() {
                 <Route path={"store/:storeId"} element={<StorePage/>}/>
                 <Route path={"checkout"} element={<Checkout/>}/>
                 <Route path={"order-confirmation/:orderId"} element={<OrderConfirmation/>}/>
+                <Route path={"product/:id"} element={<ProductDetails/>}/>
 
                 {/* Company & Help Pages */}
                 <Route path={"our-story"} element={<InfoPage slug="our-story"/>}/>
@@ -74,18 +84,32 @@ export default function AppRoutes() {
                     <Route path={"orders"} element={<MyOrders/>}/>
                     <Route path={"addresses"} element={<Addresses/>}/>
                     <Route path={"change-password"} element={<ChangePassword/>}/>
+                    <Route path={"orders/:orderId"} element={<OrderDetails/>}/>
+                    <Route path={"orders/:orderId/track"} element={<OrderTracking/>}/>
                 </Route>
             </Route>
 
             {/* Seller Routes */}
-            <Route path="/seller" element={<ProtectedRoute roles={["Seller"]} />}>
-                <Route element={<SellerLayout />}>
-                    <Route index element={<SellerDashboard />} />
+            <Route path="/seller" element={<ProtectedRoute roles={["Seller"]}/>}>
+                <Route element={<SellerLayout/>}>
+                    <Route index element={<SellerDashboard/>}/>
+                    <Route path="products" element={<SellerProducts/>}/>
+                    <Route path="products/new" element={<ProductForm/>}/>
+                    <Route path="products/:productId/edit" element={<ProductForm/>}/>
+                    <Route path="inventory" element={<SellerInventory/>}/>
+                    <Route path="orders" element={<SellerOrders/>}/>
+                    <Route path="sales" element={<SellerSales/>}/>
+                    <Route path="profile" element={<SellerProfile/>}/>
+                    <Route path="settings" element={<SellerSettings/>}/>
+                    <Route path="orders/:orderId" element={<SellerOrderDetails/>}/>
                 </Route>
             </Route>
 
-                {/* 404 Not Found */}
-                <Route path="*" element={<NotFound/>}/>
+            {/* Legacy single-product edit alias → keep deep links working */}
+            <Route path="/seller/products/:productId" element={<Navigate to="/seller/products" replace/>}/>
+
+            {/* 404 Not Found */}
+            <Route path="*" element={<NotFoundLayout/>}/>
         </Routes>
-)
+    )
 }
