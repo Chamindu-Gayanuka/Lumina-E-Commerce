@@ -101,7 +101,7 @@ export default function SellerSettings() {
                     operations</h2>
                 <div className="mt-2">
                     <Toggle on={prefs.autoAccept} onChange={set("autoAccept")} label="Auto-accept COD orders"
-                            desc="Skip manual confirmation — orders jump straight to Processing."/>
+                            desc="Skip manual confirmation - orders jump straight to Processing."/>
                     <Toggle on={prefs.holiday} onChange={set("holiday")} label="Holiday mode"
                             desc="Pause the storefront. Buyers see an “on hold” banner on your store page."/>
                 </div>
@@ -113,16 +113,16 @@ export default function SellerSettings() {
                 </h2>
                 <p className="mt-3 text-sm leading-relaxed text-slate-500">
                     You decide whether buyers pay for delivery. When charged, a flat Rs. {DELIVERY_FEE} is added
-                    <span className="font-bold text-ink-700"> once per order</span> containing your products — never
+                    <span className="font-bold text-ink-700"> once per order</span> containing your products - never
                     stacked per
-                    item — and shown in the cart and checkout before payment.
+                    item - and shown in the cart and checkout before payment.
                 </p>
                 <div role="radiogroup" aria-label="Delivery charges" className="mt-4 grid gap-3 sm:grid-cols-2">
                     {[
                         {
                             key: "free",
                             title: "Free delivery",
-                            desc: "Buyers see a “Free delivery” badge on your store and listings — great for conversion."
+                            desc: "Buyers see a “Free delivery” badge on your store and listings - great for conversion."
                         },
                         {
                             key: "charge",
@@ -155,7 +155,7 @@ export default function SellerSettings() {
                     })}
                 </div>
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-xs text-slate-400">Applies to new carts immediately — already-placed orders are
+                    <p className="text-xs text-slate-400">Applies to new carts immediately - already-placed orders are
                         never re-priced.</p>
                     <Button size="sm" variant="secondary" onClick={saveDelivery} loading={savingDelivery}>
                         Save policy

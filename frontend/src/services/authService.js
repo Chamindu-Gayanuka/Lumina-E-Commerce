@@ -17,7 +17,7 @@ export async function login(email, password) {
     }
     const seller = user.sellerId ? store.getSellers().find((s) => s.id === user.sellerId) : null;
     const {password: _pw, ...safe} = user;
-    /* Fake token — decodable shape only. Do NOT trust this for authorization. */
+    /* Fake token - decodable shape only. Do NOT trust this for authorization. */
     const token = `demo-jwt.${btoa(JSON.stringify({sub: safe.id, role: safe.role}))}.mock`;
     return {user: {...safe, seller}, token};
 }
@@ -46,7 +46,7 @@ export async function registerSeller(data) {
 
 export async function requestPasswordReset(email) {
     await delay();
-    /* Always resolve — never leak which emails exist. */
+    /* Always resolve - never leak which emails exist. */
     return {sent: true, email};
 }
 

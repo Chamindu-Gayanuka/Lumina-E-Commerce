@@ -31,7 +31,7 @@ export default function Badge({tone = "slate", uppercase = false, dot = false, c
     );
 }
 
-/** Domain badges — status → tone mapping lives in utils/constants.js */
+/** Domain badges - status → tone mapping lives in utils/constants.js */
 export function OrderStatusBadge({status}) {
     const meta = ORDER_STATUS_META[status] || {badge: "slate"};
     return (

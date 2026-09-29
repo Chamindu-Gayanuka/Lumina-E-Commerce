@@ -34,7 +34,7 @@ export async function placeOrder(payload) {
         }
     }
     if (problems.length) {
-        const err = new Error(`Stock changed while you were shopping — ${problems.join("; ")}.`);
+        const err = new Error(`Stock changed while you were shopping - ${problems.join("; ")}.`);
         err.code = "STOCK_UNAVAILABLE";
         throw err;
     }

@@ -31,7 +31,7 @@ const BANNERS = {
     Delivered: {
         icon: FaHouse,
         title: "Delivered",
-        note: "Order delivered successfully — enjoy!",
+        note: "Order delivered successfully - enjoy!",
         tone: "from-emerald-600 to-emerald-500"
     },
     Cancelled: {

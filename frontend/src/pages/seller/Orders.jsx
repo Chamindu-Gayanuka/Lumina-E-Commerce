@@ -70,7 +70,7 @@ export default function SellerOrders() {
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-extrabold tracking-tight text-ink-900">Orders</h1>
-                    <p className="mt-1.5 text-sm text-slate-500">Orders containing your products. Update statuses here —
+                    <p className="mt-1.5 text-sm text-slate-500">Orders containing your products. Update statuses here -
                         customers track them live.</p>
                 </div>
                 <Button variant="secondary" icon={<FaTruckFast size={12} className="text-primary-600"/>}
@@ -182,9 +182,9 @@ export default function SellerOrders() {
                             }`}
                         >
               <span className="text-sm font-bold text-ink-900">
-                {status === "Processing" && "Mark as Processing — pack & label"}
-                  {status === "Shipped" && "Mark as Shipped — hand to courier"}
-                  {status === "Delivered" && "Mark as Delivered — COD collected"}
+                {status === "Processing" && "Mark as Processing - pack & label"}
+                  {status === "Shipped" && "Mark as Shipped - hand to courier"}
+                  {status === "Delivered" && "Mark as Delivered - COD collected"}
                   {status === "Cancelled" && "Cancel this order"}
               </span>
                             <Badge tone={status === "Cancelled" ? "red" : "teal"} uppercase>→ {status}</Badge>

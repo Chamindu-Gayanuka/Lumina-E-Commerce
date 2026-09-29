@@ -175,7 +175,7 @@ export default function ProductDetails() {
                             onClick={() => {
                                 const res = cart.add(product.id, effQty);
                                 if (res.added > 0) {
-                                    notify(res.capped ? `Only ${res.stock} in stock — ${res.inCart} now in your cart` : `${res.added} × ${product.name} added to cart`, res.capped ? "info" : "success");
+                                    notify(res.capped ? `Only ${res.stock} in stock - ${res.inCart} now in your cart` : `${res.added} × ${product.name} added to cart`, res.capped ? "info" : "success");
                                 } else if (res.soldOut) {
                                     notify(`${product.name} is out of stock`, "error");
                                 } else {
@@ -205,12 +205,12 @@ export default function ProductDetails() {
                     )}
                     {low && !maxed && (
                         <p className="mt-3 text-xs font-bold uppercase tracking-wide text-orange-600">
-                            Hurry — only {addable} left to add!
+                            Hurry - only {addable} left to add!
                         </p>
                     )}
                     {out &&
                         <p className="mt-3 text-xs font-bold uppercase tracking-wide text-red-500">Currently unavailable
-                            — check back soon or browse similar products below.</p>}
+                            - check back soon or browse similar products below.</p>}
 
                     {/* Seller card */}
                     {product.seller && (
@@ -294,7 +294,7 @@ export default function ProductDetails() {
                                 <table className="w-full text-sm">
                                     <tbody className="divide-y divide-slate-100">
                                     {(product.specs?.length ? product.specs : [{
-                                        label: "—",
+                                        label: "-",
                                         value: "No specifications listed."
                                     }]).map((s) => (
                                         <tr key={s.label}>
@@ -347,7 +347,7 @@ export default function ProductDetails() {
                     {/* Review histogram (description tab style from wireframe) */}
                     <aside className="hidden lg:block">
                         <div className="lum-card sticky top-24 p-6 text-center">
-                            <p className="text-4xl font-extrabold text-ink-900">{product.rating ? product.rating.toFixed(1) : "—"}</p>
+                            <p className="text-4xl font-extrabold text-ink-900">{product.rating ? product.rating.toFixed(1) : "-"}</p>
                             <RatingStars rating={product.rating} size={18} className="mt-2 justify-center"/>
                             <p className="mt-2 text-xs text-slate-400">Based on {product.reviewCount} reviews</p>
                             <div className="mt-5 space-y-2">

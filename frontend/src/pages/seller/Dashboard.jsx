@@ -114,7 +114,7 @@ export default function SellerDashboard() {
                             {key: "status", header: "Status", render: (r) => <OrderStatusBadge status={r.status}/>},
                         ]}
                         rows={orders.slice(0, 5)}
-                        emptyMessage="No orders yet — they'll show up here the moment a customer checks out."
+                        emptyMessage="No orders yet - they'll show up here the moment a customer checks out."
                     />
                 </section>
 

@@ -38,7 +38,7 @@ const SEED = [
 
 const EMPTY = {label: "", name: "", line1: "", city: "", district: "", postalCode: "", phone: "", isDefault: false};
 
-/** Client-side address book — the future API will persist per user. */
+/** Client-side address book - the future API will persist per user. */
 export default function Addresses() {
     const {notify} = useToast();
     const [list, setList] = useState(() => {

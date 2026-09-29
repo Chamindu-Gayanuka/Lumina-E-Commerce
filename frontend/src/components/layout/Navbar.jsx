@@ -65,7 +65,7 @@ export default function Navbar() {
 
     const handleLogout = () => {
         logout();
-        notify("Signed out — see you soon!", "info");
+        notify("Signed out - see you soon!", "info");
         navigate("/");
         closeMenu();
     };
@@ -79,7 +79,7 @@ export default function Navbar() {
                     Lumina
                 </Link>
 
-                {/* Search — visible at all screen sizes */}
+                {/* Search - visible at all screen sizes */}
                 <form onSubmit={submitSearch} className="relative mx-1 min-w-0 flex-1 lg:mx-8 lg:max-w-xl">
                     <input
                         value={q}
@@ -97,7 +97,7 @@ export default function Navbar() {
                     </button>
                 </form>
 
-                {/* Categories · Cart · Account — desktop only (mobile lives in the menu) */}
+                {/* Categories · Cart · Account - desktop only (mobile lives in the menu) */}
                 <div className="ml-auto hidden items-center gap-1 lg:flex xl:gap-2">
                     <Dropdown
                         width="w-60"
@@ -189,7 +189,7 @@ export default function Navbar() {
                     )}
                 </div>
 
-                {/* Menu button — mobile / tablet only */}
+                {/* Menu button - mobile / tablet only */}
                 <button
                     type="button"
                     onClick={() => setMobileOpen((v) => !v)}
