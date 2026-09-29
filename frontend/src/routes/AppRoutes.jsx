@@ -7,6 +7,7 @@ import CustomerLayout from "../layouts/CustomerLayout";
 import ProtectedRoute from "./ProtectedRoute";
 import SellerLayout from "../layouts/SellerLayout";
 import NotFoundLayout from "../layouts/NotFoundLayout";
+import AdminLayout from "../layouts/AdminLayout";
 
 //  Authentication
 import Login from "../pages/auth/Login";
@@ -42,6 +43,10 @@ import SellerSales from "../pages/seller/Sales";
 import SellerProfile from "../pages/seller/Profile";
 import SellerSettings from "../pages/seller/Settings";
 import SellerOrderDetails from "../pages/seller/OrderDetails";
+
+// Admin Routes
+import AdminDashboard from "../pages/admin/Dashboard";
+import AdminSettings from "../pages/admin/Settings";
 
 // Company & Help Pages
 import InfoPage from "../pages/info/InfoPage";
@@ -107,6 +112,15 @@ export default function AppRoutes() {
 
             {/* Legacy single-product edit alias → keep deep links working */}
             <Route path="/seller/products/:productId" element={<Navigate to="/seller/products" replace/>}/>
+
+            {/* ── Admin console ──────────────────────────────────────────── */}
+            <Route path="/admin" element={<ProtectedRoute roles={["Administrator"]} />}>
+                <Route element={<AdminLayout />}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="profile" element={<Profile />} />
+                    <Route path="settings" element={<AdminSettings />} />
+                </Route>
+            </Route>
 
             {/* 404 Not Found */}
             <Route path="*" element={<NotFoundLayout/>}/>

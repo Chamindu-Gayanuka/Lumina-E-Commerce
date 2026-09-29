@@ -69,7 +69,7 @@ export default function Cart() {
                                     )}
                                     {product.stock === 0 && (
                                         <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-red-500">Out
-                                            of stock — remove to continue</p>
+                                            of stock - remove to continue</p>
                                     )}
                                 </div>
 

@@ -132,7 +132,7 @@ export default function Checkout() {
                 <div className="mx-auto mt-10 max-w-xl">
                     <EmptyState
                         title="There's nothing to check out"
-                        message="Your cart is empty — add a few premium picks first and the checkout will be waiting."
+                        message="Your cart is empty - add a few premium picks first and the checkout will be waiting."
                         action={{label: "Browse products", onClick: () => navigate("/shop")}}
                     />
                 </div>
@@ -214,7 +214,7 @@ export default function Checkout() {
 
             <form onSubmit={submit} className="mt-10 grid items-start gap-10 lg:grid-cols-[1fr_400px]">
                 <div className="min-w-0 space-y-10">
-                    {/* 1 — Delivery */}
+                    {/* 1 - Delivery */}
                     <section>
                         <SectionTitle number="1" title="Delivery Information"/>
                         <ValidationSummary errors={errors}/>
@@ -256,7 +256,7 @@ export default function Checkout() {
                                   checked={form.save} onChange={set("save")}/>
                     </section>
 
-                    {/* 2 — Payment */}
+                    {/* 2 - Payment */}
                     <section>
                         <SectionTitle number="2" title="Payment Method"/>
                         <div className="mt-5">
@@ -264,7 +264,7 @@ export default function Checkout() {
                         </div>
                     </section>
 
-                    {/* 3 — Notes */}
+                    {/* 3 - Notes */}
                     <section>
                         <SectionTitle number={3} title="Order Notes" note="(Optional)"/>
                         <Textarea

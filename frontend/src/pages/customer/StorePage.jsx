@@ -147,7 +147,7 @@ export default function StorePage() {
                     month: "short",
                     year: "numeric",
                 })
-                : "—",
+                : "-",
         },
         {
             label: "Response Rate",
@@ -267,7 +267,7 @@ export default function StorePage() {
                                 }
                                 onClick={() =>
                                     notify(
-                                        `Messaging is a future feature — seller email: ${seller.email}`,
+                                        `Messaging is a future feature - seller email: ${seller.email}`,
                                         "info"
                                     )
                                 }
@@ -378,7 +378,7 @@ export default function StorePage() {
                     <div className="mt-6">
                         <EmptyState
                             title="This store has no products yet"
-                            message="Check back soon — new listings are added every week."
+                            message="Check back soon - new listings are added every week."
                         />
                     </div>
                 )}

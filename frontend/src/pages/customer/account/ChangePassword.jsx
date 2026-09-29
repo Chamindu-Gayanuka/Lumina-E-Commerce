@@ -33,7 +33,7 @@ export default function ChangePassword() {
         await new Promise((r) => setTimeout(r, 500));
         setSaving(false);
         setForm({current: "", next: "", confirm: ""});
-        notify("Password updated (demo — backend not connected)");
+        notify("Password updated (demo - backend not connected)");
     };
 
     return (
@@ -74,7 +74,7 @@ export default function ChangePassword() {
                         <FaCircleInfo className="text-primary-600"/> Security note
                     </p>
                     <p className="mt-2.5 text-sm leading-relaxed text-primary-900/80">
-                        This is a frontend demonstration — no password leaves your browser yet. When the Express +
+                        This is a frontend demonstration - no password leaves your browser yet. When the Express +
                         MongoDB backend is connected, passwords are hashed with bcrypt.js and verified server-side
                         with JWT sessions, exactly as specified in the project plan.
                     </p>

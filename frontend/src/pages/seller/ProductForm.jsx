@@ -175,7 +175,7 @@ export default function ProductForm() {
                     <div className="mt-5">
                         <p className="lum-label"><FaImage className="mr-1.5 inline text-slate-400"/>Product Image</p>
                         <p className="mb-3 text-xs text-slate-400">File uploads connect to the media service in the
-                            backend phase — pick a demo asset:</p>
+                            backend phase - pick a demo asset:</p>
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                             {IMAGE_CHOICES.map((choice) => (
                                 <button

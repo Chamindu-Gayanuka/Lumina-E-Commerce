@@ -78,7 +78,7 @@ export default function SellerRegister() {
           </span>
                     <h1 className="mt-6 text-2xl font-extrabold text-ink-900">Application submitted!</h1>
                     <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-400">
-                        Thanks, {form.name || "seller"} — your store <strong
+                        Thanks, {form.name || "seller"} - your store <strong
                         className="text-ink-800">{form.storeName}</strong> is now
                         pending manual review by the Lumina team. You&apos;ll hear from{" "}
                         <span className="font-semibold text-ink-800">{form.email}</span> within 2 business days.

@@ -90,7 +90,7 @@ export default function MyOrders() {
         setCancelling(true);
         try {
             await cancelOrder(cancelTarget.id, cancelReason.trim());
-            notify("Order cancelled — items returned to stock", "info");
+            notify("Order cancelled - items returned to stock", "info");
             setCancelTarget(null);
             setCancelReason("");
             load();

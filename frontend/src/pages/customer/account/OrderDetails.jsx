@@ -59,7 +59,7 @@ function StatusFlow({status}) {
                                     {step.label}
                                 </p>
                                 <p className="mt-0.5 text-[10px] text-slate-400">
-                                    {done ? "Done" : step.key === "Shipped" ? "Expected soon" : step.key === "Delivered" ? "Estimated Oct 24" : "—"}
+                                    {done ? "Done" : step.key === "Shipped" ? "Expected soon" : step.key === "Delivered" ? "Estimated Oct 24" : "-"}
                                 </p>
                             </div>
                         </React.Fragment>

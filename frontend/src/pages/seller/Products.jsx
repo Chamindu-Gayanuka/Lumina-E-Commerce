@@ -143,7 +143,7 @@ export default function SellerProducts() {
                                         key: "rating",
                                         header: "Rating",
                                         render: (p) => <span
-                                            className="text-sm font-semibold text-slate-500">{p.rating ? `★ ${p.rating} (${p.reviewCount})` : "—"}</span>
+                                            className="text-sm font-semibold text-slate-500">{p.rating ? `★ ${p.rating} (${p.reviewCount})` : "-"}</span>
                                     },
                                     {
                                         key: "status",

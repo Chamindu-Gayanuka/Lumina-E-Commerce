@@ -64,7 +64,7 @@ export default function ProductCard({product, priority = false}) {
                     onClick={() => {
                         const res = cart.add(product.id, 1);
                         if (res.added > 0) {
-                            notify(res.capped ? `Only ${res.stock} in stock — ${res.inCart} now in your cart` : `${product.name} added to cart`, res.capped ? "info" : "success");
+                            notify(res.capped ? `Only ${res.stock} in stock - ${res.inCart} now in your cart` : `${product.name} added to cart`, res.capped ? "info" : "success");
                         } else if (res.soldOut) {
                             notify(`${product.name} is out of stock`, "error");
                         } else {
