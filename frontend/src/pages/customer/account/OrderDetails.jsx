@@ -148,7 +148,7 @@ export default function OrderDetails() {
                 <StatusFlow status={order.status}/>
             </div>
 
-            <div className="mt-6 grid items-start gap-6 lg:grid-cols-[1fr_360px]">
+            <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]]">
                 <div className="space-y-6">
                     {/* Items */}
                     <section className="lum-card p-6">
@@ -193,7 +193,7 @@ export default function OrderDetails() {
                         <h2 className="flex items-center gap-2 border-b border-slate-100 pb-4 text-base font-extrabold tracking-tight text-ink-900">
                             <FaLocationDot className="text-primary-600" size={14}/> Delivery Address
                         </h2>
-                        <div className="mt-4 grid gap-5 sm:grid-cols-[1fr_200px]">
+                        <div className="mt-4 grid gap-5 sm:grid-cols-[minmax(0,1fr)_200px]]">
                             <div className="text-sm leading-relaxed">
                                 <p className="font-bold text-ink-900">{order.address.name}</p>
                                 <p className="mt-1 text-slate-500">{order.address.line1}</p>

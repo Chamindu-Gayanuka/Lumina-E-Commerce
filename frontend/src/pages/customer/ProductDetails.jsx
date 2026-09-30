@@ -19,15 +19,17 @@ import ProductCard from "../../components/product/ProductCard";
 import {PageSpinner} from "../../components/ui/Spinner";
 import {EmptyState} from "../../components/ui/States";
 import {formatPrice, formatDate} from "../../utils/format";
-import {getProduct, getRelatedProducts} from "../../services/productService";
+import {getProduct, getRelatedProducts, submitProductReview, isVerifiedPurchase} from "../../services/productService";
 import {useCart} from "../../context/CartContext";
 import {useToast} from "../../context/ToastContext";
+import {useAuth} from "../../context/AuthContext";
 
 export default function ProductDetails() {
     const {id} = useParams();
     const navigate = useNavigate();
     const cart = useCart();
     const {notify} = useToast();
+    const {user} = useAuth();
 
     const [product, setProduct] = useState(null);
     const [related, setRelated] = useState([]);
@@ -230,6 +232,11 @@ export default function ProductDetails() {
                                         <FaTruck size={10}/> Shipped by {product.seller.storeName.split(" ")[0]},
                                         fulfilled by Lumina Express
                                     </p>
+                                    <p className={`mt-0.5 text-[11px] font-bold ${product.seller.deliveryFee > 0 ? "text-amber-600" : "text-emerald-600"}`}>
+                                        {product.seller.deliveryFee > 0
+                                            ? `Rs. ${product.seller.deliveryFee} delivery fee (charged once per order from this store)`
+                                            : "This store offers free delivery"}
+                                    </p>
                                 </div>
                             </div>
                             <Link to={`/store/${product.seller.id}`}
@@ -260,7 +267,7 @@ export default function ProductDetails() {
                     className="[&_button]:px-4 [&_button]:py-3 [&_button]:text-base"
                 />
 
-                <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_380px]">
+                <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_380px]]">
                     <div className="min-w-0">
                         {tab === "description" && (
                             <div>
@@ -315,19 +322,30 @@ export default function ProductDetails() {
 
                         {tab === "reviews" && (
                             <div className="space-y-4">
+                                <ReviewComposer
+                                    product={product}
+                                    user={user}
+                                    onPosted={async () => {
+                                        const fresh = await getProduct(id);
+                                        if (fresh) setProduct(fresh);
+                                    }}
+                                    notify={notify}
+                                />
                                 {product.reviews?.length ? (
                                     product.reviews.map((r) => (
-                                        <article key={r.id} className="lum-card p-5">
-                                            <div className="flex items-center justify-between gap-3">
-                                                <div className="flex items-center gap-3">
+                                        <article key={r.id}
+                                                 className={`lum-card p-5 ${r.own ? "ring-1 ring-primary-200" : ""}`}>
+                                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                                <div className="flex min-w-0 items-center gap-3">
                           <span
-                              className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-ink-700">
+                              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-ink-700">
                             {r.user.charAt(0)}
                           </span>
-                                                    <div>
+                                                    <div className="min-w-0">
                                                         <p className="text-sm font-bold text-ink-900">{r.user}</p>
-                                                        <p className="text-[11px] text-slate-400">{formatDate(r.date)} ·
-                                                            Verified purchase</p>
+                                                        <p className="text-[11px] text-slate-400">
+                                                            {formatDate(r.date)} · {r.own ? (r.verified ? "Your review · Verified purchase" : "Your review") : "Verified purchase"}
+                                                        </p>
                                                     </div>
                                                 </div>
                                                 <RatingStars rating={r.rating} size={12}/>
@@ -402,5 +420,173 @@ export default function ProductDetails() {
                 </div>
             )}
         </div>
+    );
+}
+
+/* ── Write a review (customers who bought this product) ────────────────── */
+function ReviewComposer({product, user, onPosted, notify}) {
+    const [rating, setRating] = useState(0);
+    const [hover, setHover] = useState(0);
+    const [title, setTitle] = useState("");
+    const [text, setText] = useState("");
+    const [verified, setVerified] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const [errors, setErrors] = useState({});
+
+    const alreadyPosted = Boolean(user) && (product.reviews || []).some((r) => r.userId === user.id);
+
+    useEffect(() => {
+        let alive = true;
+        if (user) isVerifiedPurchase(user.id, product.id).then((v) => alive && setVerified(Boolean(v)));
+        return () => {
+            alive = false;
+        };
+    }, [user, product.id]);
+
+    if (!user || user.role !== "Customer") {
+        return (
+            <div className="lum-card flex flex-wrap items-center justify-between gap-3 bg-slate-50/60 p-5">
+                <p className="text-sm text-slate-500">
+                    <FaCircleCheck className="mr-1.5 inline text-primary-500" size={13}/>
+                    {user ? "Reviews can be posted from a customer account." : "Sign in as a customer to share your experience."}
+                </p>
+                {!user && (
+                    <Link to="/login" className="text-xs font-bold text-primary-600 hover:underline">
+                        Sign in →
+                    </Link>
+                )}
+            </div>
+        );
+    }
+
+    if (alreadyPosted) {
+        return (
+            <div
+                className="lum-card flex items-start gap-3 border-primary-100 bg-primary-50/50 p-5 text-sm text-primary-800">
+                <FaCircleCheck className="mt-0.5 shrink-0 text-primary-600" size={15}/>
+                <p>
+                    <span className="font-extrabold">Thanks for reviewing {product.name}!</span> Your feedback is public
+                    and updates
+                    the store rating instantly. Reviews can&rsquo;t be edited in this demo - support can remove one on
+                    request.
+                </p>
+            </div>
+        );
+    }
+
+    const submit = async () => {
+        const next = {};
+        if (!rating) next.rating = "Pick a star rating first.";
+        if (text.trim().length < 20) next.text = `Tell buyers a bit more - at least 20 characters (${text.trim().length} so far).`;
+        setErrors(next);
+        if (Object.keys(next).length) return;
+        setBusy(true);
+        try {
+            await submitProductReview(product.id, {
+                userId: user.id,
+                userName: user.name,
+                rating,
+                title,
+                comment: text,
+                verified,
+            });
+            setTitle("");
+            setText("");
+            setRating(0);
+            notify(verified ? "Review published - thanks for shopping with Lumina!" : "Review published - thanks!", "success");
+            await onPosted();
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    return (
+        <section className="lum-card p-5 sm:p-6" aria-labelledby="write-review-heading">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 id="write-review-heading" className="text-base font-extrabold tracking-tight text-ink-900">
+                    Write a review
+                </h3>
+                {verified && (
+                    <span
+                        className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 ring-1 ring-emerald-200">
+            <FaCircleCheck size={10}/> Verified purchase
+          </span>
+                )}
+            </div>
+            <p className="mt-1 text-xs text-slate-400">
+                {verified
+                    ? "You received this product - your review carries the Verified purchase badge."
+                    : "Any signed-in customer can review. Verified purchase badges appear automatically once an order is delivered."}
+            </p>
+
+            <fieldset className="mt-4">
+                <legend className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Your rating *
+                </legend>
+                <div className="mt-1.5 flex items-center gap-1.5" onMouseLeave={() => setHover(0)}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                            key={star}
+                            type="button"
+                            role="radio"
+                            aria-checked={rating === star}
+                            aria-label={`${star} star${star > 1 ? "s" : ""}`}
+                            onMouseEnter={() => setHover(star)}
+                            onClick={() => {
+                                setRating(star);
+                                setErrors((e) => ({...e, rating: null}));
+                            }}
+                            className={`text-2xl leading-none transition-transform hover:scale-110 ${
+                                (hover || rating) >= star ? "text-amber-400" : "text-slate-300"
+                            }`}
+                        >
+                            ★
+                        </button>
+                    ))}
+                    {rating > 0 && <span className="ml-2 text-xs font-bold text-ink-700">{rating} / 5</span>}
+                </div>
+                {errors.rating && <p className="mt-1.5 text-xs font-semibold text-red-500">{errors.rating}</p>}
+            </fieldset>
+
+            <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,220px)_1fr]]">
+                <label className="block">
+                    <span
+                        className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Title (optional)</span>
+                    <input
+                        type="text"
+                        value={title}
+                        maxLength={60}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="Sums it up in a line"
+                        className="mt-1.5 h-10 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-ink-800 placeholder:text-slate-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                    />
+                </label>
+                <label className="block">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Your review * (min 20 characters)</span>
+                    <textarea
+                        value={text}
+                        rows={3}
+                        maxLength={600}
+                        onChange={(e) => {
+                            setText(e.target.value);
+                            if (errors.text) setErrors((err) => ({...err, text: null}));
+                        }}
+                        placeholder="What did you like or dislike? Sound, comfort, battery, delivery…"
+                        className={`mt-1.5 w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm leading-relaxed text-ink-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 ${
+                            errors.text ? "border-red-300 ring-2 ring-red-200" : "border-slate-200 focus:border-primary-400 focus:ring-primary-500/20"
+                        }`}
+                    />
+                </label>
+            </div>
+            {errors.text && <p className="mt-1 text-xs font-semibold text-red-500">{errors.text}</p>}
+
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-[11px] text-slate-400">
+                    {text.length} / 600 · Posting as {user.name}
+                </p>
+                <Button size="sm" onClick={submit} loading={busy}>
+                    Publish review
+                </Button>
+            </div>
+        </section>
     );
 }

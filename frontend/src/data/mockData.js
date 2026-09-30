@@ -34,7 +34,7 @@ export const CATEGORIES = [
     {
         id: "c5",
         name: "Toys",
-        description: "Play, learn and grow — toys for every age.",
+        description: "Play, learn and grow - toys for every age.",
         iconKey: "toys",
         status: "Active",
         createdAt: "2022-02-01T09:20:00Z",
@@ -52,6 +52,14 @@ export const CATEGORIES = [
 export const SELLERS = [
     {
         id: "s1",
+        businessName: "SoundMaster Official (Pvt) Ltd",
+        city: "Colombo",
+        accountStatus: "Active",
+        taxId: "BR-2021-SM-0417",
+        appliedAt: null,
+        reviewedAt: null,
+        rejectionReason: null,
+        verification: {identity: true, businessReg: true, bankAccount: true, productImages: true},
         userId: "u2",
         storeName: "SoundMaster Official",
         description:
@@ -63,6 +71,7 @@ export const SELLERS = [
         rating: 4.8,
         reviewCount: 341,
         responseRate: 98,
+        deliveryFee: 450, // 0 = free delivery · 450 = seller charges a flat fee per order
         ordersCompleted: 1240,
         joinedAt: "2022-01-15",
         productsCount: 142,
@@ -70,9 +79,17 @@ export const SELLERS = [
     },
     {
         id: "s2",
+        businessName: "StyleHub Collective (Pvt) Ltd",
+        city: "Mount Lavinia",
+        accountStatus: "Active",
+        taxId: "BR-2022-SH-1129",
+        appliedAt: null,
+        reviewedAt: null,
+        rejectionReason: null,
+        verification: {identity: true, businessReg: true, bankAccount: true, productImages: true},
         userId: "u9",
         storeName: "StyleHub Collective",
-        description: "Everyday fashion with a premium finish — apparel, bags and footwear.",
+        description: "Everyday fashion with a premium finish - apparel, bags and footwear.",
         phone: "+94 71 555 8822",
         email: "team@stylehub.lk",
         address: "18 Galle Road, Mount Lavinia",
@@ -80,6 +97,7 @@ export const SELLERS = [
         rating: 4.6,
         reviewCount: 189,
         responseRate: 95,
+        deliveryFee: 450, // 0 = free delivery · 450 = seller charges a flat fee per order
         ordersCompleted: 860,
         joinedAt: "2022-06-02",
         productsCount: 76,
@@ -87,6 +105,14 @@ export const SELLERS = [
     },
     {
         id: "s3",
+        businessName: "HomeNest Living (Pvt) Ltd",
+        city: "Peradeniya",
+        accountStatus: "Active",
+        taxId: "BR-2023-HN-0786",
+        appliedAt: null,
+        reviewedAt: null,
+        rejectionReason: null,
+        verification: {identity: true, businessReg: true, bankAccount: true, productImages: true},
         userId: "u10",
         storeName: "HomeNest Living",
         description: "Warm, minimal home decor and lighting crafted in Sri Lanka.",
@@ -97,6 +123,7 @@ export const SELLERS = [
         rating: 4.9,
         reviewCount: 142,
         responseRate: 99,
+        deliveryFee: 0, // 0 = free delivery · 450 = seller charges a flat fee per order
         ordersCompleted: 512,
         joinedAt: "2023-02-18",
         productsCount: 54,
@@ -104,6 +131,15 @@ export const SELLERS = [
     },
     {
         id: "s4",
+        businessName: "GlowCart Beauty (Pvt) Ltd",
+        city: "Colombo 06",
+        accountStatus: "Inactive",
+        taxId: "BR-2026-GC-3311",
+        appliedAt: "2026-09-28T10:15:00Z",
+        underReviewAt: "2026-09-29T09:30:00Z",
+        reviewedAt: null,
+        rejectionReason: null,
+        verification: {identity: true, businessReg: true, bankAccount: true, productImages: true},
         userId: "u11",
         storeName: "GlowCart Beauty",
         description: "Clean beauty, serums and self-care rituals.",
@@ -114,6 +150,7 @@ export const SELLERS = [
         rating: 0,
         reviewCount: 0,
         responseRate: 0,
+        deliveryFee: 0, // 0 = free delivery · 450 = seller charges a flat fee per order
         ordersCompleted: 0,
         joinedAt: "2026-09-28",
         productsCount: 12,
@@ -121,6 +158,14 @@ export const SELLERS = [
     },
     {
         id: "s5",
+        businessName: "ToyBox Island (Pvt) Ltd",
+        city: "Kandy",
+        accountStatus: "Active",
+        taxId: "BR-2023-TB-0552",
+        appliedAt: null,
+        reviewedAt: null,
+        rejectionReason: null,
+        verification: {identity: true, businessReg: true, bankAccount: true, productImages: true},
         userId: "u12",
         storeName: "ToyBox Island",
         description: "Learning toys, builders and cuddly friends for kids.",
@@ -131,6 +176,7 @@ export const SELLERS = [
         rating: 4.7,
         reviewCount: 96,
         responseRate: 93,
+        deliveryFee: 450, // 0 = free delivery · 450 = seller charges a flat fee per order
         ordersCompleted: 344,
         joinedAt: "2023-11-05",
         productsCount: 38,
@@ -141,9 +187,10 @@ export const SELLERS = [
 export const USERS = [
     {
         id: "u1",
+        lastLogin: "Today, 8:42 AM",
         name: "John Doe",
         email: "john.doe@example.com",
-        password: "Lumina@2026", // demo only — real hashes live in the backend
+        password: "Lumina@2026", // demo only - real hashes live in the backend
         role: "Customer",
         status: "Active",
         phone: "+94 76 123 4567",
@@ -159,6 +206,7 @@ export const USERS = [
     },
     {
         id: "u2",
+        lastLogin: "Today, 7:55 AM",
         name: "Nimal Perera",
         email: "soundmaster@example.com",
         password: "Lumina@2026",
@@ -171,6 +219,7 @@ export const USERS = [
     },
     {
         id: "u0",
+        lastLogin: "Today, 9:02 AM",
         name: "Admin User",
         email: "admin@lumina.lk",
         password: "Lumina@2026",
@@ -182,6 +231,7 @@ export const USERS = [
     },
     {
         id: "u3",
+        lastLogin: "Yesterday, 6:20 PM",
         name: "Sanduni Silva",
         email: "sanduni.silva@example.com",
         password: "Lumina@2026",
@@ -195,6 +245,7 @@ export const USERS = [
     },
     {
         id: "u4",
+        lastLogin: "2 days ago",
         name: "Kasun Fernando",
         email: "kasun.f@example.com",
         password: "Lumina@2026",
@@ -208,6 +259,7 @@ export const USERS = [
     },
     {
         id: "u5",
+        lastLogin: "Last week",
         name: "Amaya Jayasuriya",
         email: "amaya.j@example.com",
         password: "Lumina@2026",
@@ -221,6 +273,7 @@ export const USERS = [
     },
     {
         id: "u6",
+        lastLogin: "3 weeks ago",
         name: "Ravindu Wickrama",
         email: "ravindu.w@example.com",
         password: "Lumina@2026",
@@ -247,6 +300,7 @@ export const USERS = [
     },
     {
         id: "u9",
+        lastLogin: "Yesterday, 11:12 AM",
         name: "Fathima Rizwan",
         email: "team@stylehub.lk",
         password: "Lumina@2026",
@@ -259,6 +313,7 @@ export const USERS = [
     },
     {
         id: "u10",
+        lastLogin: "Today, 6:48 AM",
         name: "Sunil Kumaraswamy",
         email: "care@homenest.lk",
         password: "Lumina@2026",
@@ -271,6 +326,7 @@ export const USERS = [
     },
     {
         id: "u11",
+        lastLogin: "2 days ago",
         name: "Ishara Gunawardena",
         email: "glow@glowcart.lk",
         password: "Lumina@2026",
@@ -283,6 +339,7 @@ export const USERS = [
     },
     {
         id: "u12",
+        lastLogin: "4 days ago",
         name: "Malith Jayawardena",
         email: "play@toybox.lk",
         password: "Lumina@2026",
@@ -305,7 +362,7 @@ export const PRODUCTS = [
         oldPrice: 7499,
         rating: 4.9,
         reviewCount: 124,
-        soldCount: 1455, // units sold to date — drives popularity sorting
+        soldCount: 1455, // units sold to date - drives popularity sorting
         stock: 2,
         lowStockLevel: 5,
         status: "Active",
@@ -336,7 +393,7 @@ export const PRODUCTS = [
                 rating: 5,
                 date: "2026-09-18",
                 title: "Best ANC in this range",
-                comment: "Battery life is real — a full week of commutes on a single charge. Clarity on podcasts is superb."
+                comment: "Battery life is real - a full week of commutes on a single charge. Clarity on podcasts is superb."
             },
             {
                 id: "r2",
@@ -366,7 +423,7 @@ export const PRODUCTS = [
         oldPrice: 5900,
         rating: 4.5,
         reviewCount: 210,
-        soldCount: 2310, // units sold to date — drives popularity sorting
+        soldCount: 2310, // units sold to date - drives popularity sorting
         stock: 15,
         lowStockLevel: 5,
         status: "Active",
@@ -410,7 +467,7 @@ export const PRODUCTS = [
         oldPrice: 4500,
         rating: 3.8,
         reviewCount: 56,
-        soldCount: 585, // units sold to date — drives popularity sorting
+        soldCount: 585, // units sold to date - drives popularity sorting
         stock: 8,
         lowStockLevel: 4,
         status: "Active",
@@ -418,7 +475,7 @@ export const PRODUCTS = [
         popular: true,
         image: "/images/product-lamp.jpg",
         createdAt: "2026-08-10T10:00:00Z",
-        shortDescription: "Hand-thrown ceramic base with a warm linen shade — soft ambient light for reading nooks.",
+        shortDescription: "Hand-thrown ceramic base with a warm linen shade - soft ambient light for reading nooks.",
         description: [
             "Each base is hand-thrown and glazed by our studio potters in Kandy, then paired with a natural linen shade that diffuses light warmly.",
             "Fits E27 bulbs up to 15W LED (not included). Touch-dimmer on the cord.",
@@ -445,7 +502,7 @@ export const PRODUCTS = [
         oldPrice: 12000,
         rating: 4.1,
         reviewCount: 78,
-        soldCount: 831, // units sold to date — drives popularity sorting
+        soldCount: 831, // units sold to date - drives popularity sorting
         stock: 0,
         lowStockLevel: 4,
         status: "Active",
@@ -456,7 +513,7 @@ export const PRODUCTS = [
         shortDescription: "Full-grain vegetable-tanned leather with an adjustable strap and brass hardware.",
         description: [
             "Cut from full-grain, vegetable-tanned leather that patinas beautifully. Interior slip pocket, zip main compartment, and solid brass hardware.",
-            "Handcrafted in small batches — each bag carries its own natural markings.",
+            "Handcrafted in small batches - each bag carries its own natural markings.",
         ],
         highlights: [
             {iconKey: "gem", label: "Full-grain", detail: "Vegetable-tanned leather"},
@@ -489,7 +546,7 @@ export const PRODUCTS = [
         oldPrice: 4990,
         rating: 4.7,
         reviewCount: 162,
-        soldCount: 1874, // units sold to date — drives popularity sorting
+        soldCount: 1874, // units sold to date - drives popularity sorting
         stock: 42,
         lowStockLevel: 10,
         status: "Active",
@@ -517,7 +574,7 @@ export const PRODUCTS = [
         oldPrice: null,
         rating: 4.8,
         reviewCount: 41,
-        soldCount: 402, // units sold to date — drives popularity sorting
+        soldCount: 402, // units sold to date - drives popularity sorting
         stock: 3,
         lowStockLevel: 5,
         status: "Active",
@@ -545,7 +602,7 @@ export const PRODUCTS = [
         oldPrice: 6200,
         rating: 4.3,
         reviewCount: 87,
-        soldCount: 876, // units sold to date — drives popularity sorting
+        soldCount: 876, // units sold to date - drives popularity sorting
         stock: 24,
         lowStockLevel: 6,
         status: "Active",
@@ -573,7 +630,7 @@ export const PRODUCTS = [
         oldPrice: 2990,
         rating: 4.6,
         reviewCount: 133,
-        soldCount: 1140, // units sold to date — drives popularity sorting
+        soldCount: 1140, // units sold to date - drives popularity sorting
         stock: 60,
         lowStockLevel: 12,
         status: "Active",
@@ -600,7 +657,7 @@ export const PRODUCTS = [
         oldPrice: 5100,
         rating: 4.4,
         reviewCount: 35,
-        soldCount: 261, // units sold to date — drives popularity sorting
+        soldCount: 261, // units sold to date - drives popularity sorting
         stock: 11,
         lowStockLevel: 4,
         status: "Active",
@@ -609,7 +666,7 @@ export const PRODUCTS = [
         image: "/images/product-rattan-pendant-light.png",
         createdAt: "2026-07-14T10:00:00Z",
         shortDescription: "Hand-woven rattan shade that throws beautiful shadows.",
-        description: ["Natural rattan pendant with braided fabric cord and brass canopy — a statement piece over dining nooks."],
+        description: ["Natural rattan pendant with braided fabric cord and brass canopy - a statement piece over dining nooks."],
         highlights: [{iconKey: "gift", label: "Hand-woven", detail: "By local artisans"}],
         specs: [
             {label: "Diameter", value: "35 cm"},
@@ -627,7 +684,7 @@ export const PRODUCTS = [
         oldPrice: 2200,
         rating: 4.9,
         reviewCount: 98,
-        soldCount: 1204, // units sold to date — drives popularity sorting
+        soldCount: 1204, // units sold to date - drives popularity sorting
         stock: 2,
         lowStockLevel: 5,
         status: "Active",
@@ -654,7 +711,7 @@ export const PRODUCTS = [
         oldPrice: 1890,
         rating: 4.5,
         reviewCount: 64,
-        soldCount: 690, // units sold to date — drives popularity sorting
+        soldCount: 690, // units sold to date - drives popularity sorting
         stock: 30,
         lowStockLevel: 8,
         status: "Active",
@@ -681,7 +738,7 @@ export const PRODUCTS = [
         oldPrice: null,
         rating: 4.2,
         reviewCount: 22,
-        soldCount: 355, // units sold to date — drives popularity sorting
+        soldCount: 355, // units sold to date - drives popularity sorting
         stock: 14,
         lowStockLevel: 5,
         status: "Draft",
@@ -705,7 +762,7 @@ export const PRODUCTS = [
         oldPrice: 4200,
         rating: 4.8,
         reviewCount: 51,
-        soldCount: 318, // units sold to date — drives popularity sorting
+        soldCount: 318, // units sold to date - drives popularity sorting
         stock: 9,
         lowStockLevel: 4,
         status: "Active",
@@ -729,7 +786,7 @@ export const PRODUCTS = [
         oldPrice: null,
         rating: 4.6,
         reviewCount: 74,
-        soldCount: 702, // units sold to date — drives popularity sorting
+        soldCount: 702, // units sold to date - drives popularity sorting
         stock: 26,
         lowStockLevel: 6,
         status: "Active",
@@ -753,7 +810,7 @@ export const PRODUCTS = [
         oldPrice: 1150,
         rating: 4.9,
         reviewCount: 118,
-        soldCount: 964, // units sold to date — drives popularity sorting
+        soldCount: 964, // units sold to date - drives popularity sorting
         stock: 48,
         lowStockLevel: 10,
         status: "Active",
@@ -777,7 +834,7 @@ export const PRODUCTS = [
         oldPrice: null,
         rating: 4.4,
         reviewCount: 39,
-        soldCount: 466, // units sold to date — drives popularity sorting
+        soldCount: 466, // units sold to date - drives popularity sorting
         stock: 5,
         lowStockLevel: 6,
         status: "Active",
@@ -806,7 +863,7 @@ export const INVENTORY = PRODUCTS.map((p) => ({
 
 /* ─────────────────────────── Customer orders (John Doe) ───────────────────── */
 /* Tab counts in the wireframe: All 12 · Pending 2 · Processing 1 · Shipped 3
-   · Delivered 5 · Cancelled 1 — this seed reproduces exactly that. */
+   · Delivered 5 · Cancelled 1 - this seed reproduces exactly that. */
 
 const item = (id, qty) => {
     const p = PRODUCTS.find((x) => x.id === id);
@@ -943,7 +1000,7 @@ export const ORDERS = [
     mkOrder(149, "2026-09-01T09:00:00Z", "Delivered", [o("p1", 1)]),
 ];
 
-/* Other customers' orders — powers the admin order board + seller queues. */
+/* Other customers' orders - powers the admin order board + seller queues. */
 export const PLATFORM_ORDERS = [
     {
         id: "po1",

@@ -7,7 +7,7 @@ export default function AdminSettings() {
     const {notify} = useToast();
     const [general, setGeneral] = useState({
         storeName: "Lumina Marketplace",
-        supportEmail: "support@lumina.lk",
+        supportEmail: "chamindugayanuka2002@gmail.com",
         currency: "LKR",
         minOrder: "0",
     });

@@ -168,8 +168,9 @@ export default function StorePage() {
 
     return (
         <div>
-            {/* Full-width store cover */}
-            <div className="relative h-56 w-full overflow-hidden bg-gradient-to-r from-ink-900 via-slate-800 to-ink-900 sm:h-72">
+            {/* Full-width store cover with responsive heights */}
+            <div
+                className="relative h-44 w-full overflow-hidden bg-gradient-to-r from-ink-900 via-slate-800 to-ink-900 sm:h-56 md:h-64 lg:h-72">
                 {seller.coverImage ? (
                     <img
                         src={seller.coverImage}
@@ -180,22 +181,22 @@ export default function StorePage() {
                         }}
                     />
                 ) : (
-                    <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_20%_20%,#14b8a6_0,transparent_40%),radial-gradient(circle_at_80%_60%,#f59e0b_0,transparent_35%)]"/>
+                    <div
+                        className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_20%_20%,#14b8a6_0,transparent_40%),radial-gradient(circle_at_80%_60%,#f59e0b_0,transparent_35%)]"/>
                 )}
-
                 {/* Subtle tint at the bottom of the photo */}
                 <div className="absolute inset-0 bg-gradient-to-t from-ink-900/40 via-transparent to-transparent"/>
             </div>
 
             <div className="lum-container pb-16">
-                {/* Store card overlaps the cover, but text stays on white */}
+                {/* Store card overlaps the cover, responsive padding for mobile vs desktop */}
                 <section
-                    className="relative -mt-8 rounded-2xl border border-slate-200 bg-white px-5 pb-6 pt-20 shadow-lift sm:px-7 sm:pb-7 sm:pl-40 sm:pt-6"
+                    className="relative -mt-8 rounded-2xl border border-slate-200 bg-white px-4 pb-5 pt-16 shadow-lift sm:-mt-12 sm:px-7 sm:pb-7 sm:pl-40 sm:pt-6"
                     aria-labelledby="store-name"
                 >
-                    {/* Avatar overlaps the cover */}
+                    {/* Avatar overlaps the cover. Scales down slightly on mobile. */}
                     <div
-                        className="absolute -top-14 left-5 flex h-28 w-28 items-center justify-center rounded-3xl text-4xl font-extrabold text-white shadow-lift ring-4 ring-white sm:left-7"
+                        className="absolute -top-12 left-4 flex h-24 w-24 items-center justify-center rounded-2xl text-3xl font-extrabold text-white shadow-lift ring-4 ring-white sm:-top-14 sm:left-7 sm:h-28 sm:w-28 sm:rounded-3xl sm:text-4xl"
                         style={{
                             background: `linear-gradient(135deg, ${seller.accent || "#0d9488"}, #134e4a)`,
                         }}
@@ -208,7 +209,7 @@ export default function StorePage() {
                         <div className="min-w-0 flex-1">
                             <h1
                                 id="store-name"
-                                className="text-3xl font-extrabold leading-tight tracking-tight text-ink-900 sm:text-4xl [overflow-wrap:anywhere]"
+                                className="text-2xl font-extrabold leading-tight tracking-tight text-ink-900 sm:text-3xl lg:text-4xl [overflow-wrap:anywhere]"
                             >
                                 {storeName}
                             </h1>
@@ -230,9 +231,11 @@ export default function StorePage() {
                             )}
                         </div>
 
-                        <div className="flex flex-wrap gap-2.5 lg:shrink-0">
+                        {/* Actions stack on mobile, inline on large screens */}
+                        <div className="flex w-full flex-col gap-2.5 xs:flex-row lg:w-auto lg:shrink-0 lg:pb-1">
                             <Button
                                 size="md"
+                                className="w-full xs:w-auto"
                                 variant={
                                     following ? "secondary" : "primary"
                                 }
@@ -258,6 +261,7 @@ export default function StorePage() {
 
                             <Button
                                 size="md"
+                                className="w-full xs:w-auto"
                                 variant="secondary"
                                 icon={
                                     <FaEnvelope
@@ -287,25 +291,25 @@ export default function StorePage() {
                     ]}
                 />
 
-                {/* Stats */}
-                <dl className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                {/* Stats responsive grid */}
+                <dl className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-5">
                     {stats.map((stat) => (
                         <div
                             key={stat.label}
-                            className="lum-card px-5 py-4 text-center"
+                            className="lum-card px-3 py-3 text-center sm:px-5 sm:py-4"
                         >
-                            <dt className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                            <dt className="text-[10px] font-bold uppercase tracking-widest text-slate-400 sm:text-[11px]">
                                 {stat.label}
                             </dt>
-                            <dd className="mt-1 text-xl font-extrabold text-ink-900">
+                            <dd className="mt-1 text-lg font-extrabold text-ink-900 sm:text-xl">
                                 {stat.value}
                             </dd>
                         </div>
                     ))}
                 </dl>
 
-                {/* Products */}
-                <div className="mt-12 flex flex-wrap items-center justify-between gap-4">
+                {/* Products section */}
+                <div className="mt-12 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                     <h2 className="min-w-0 text-xl font-extrabold tracking-tight text-ink-900">
                         Products by{" "}
                         <span className="text-primary-600 [overflow-wrap:anywhere]">
@@ -313,7 +317,8 @@ export default function StorePage() {
                         </span>
                     </h2>
 
-                    <div className="flex flex-wrap items-center gap-2.5">
+                    {/* Filters full-width stack on mobile, auto-width inline on sm+ */}
+                    <div className="flex w-full flex-col gap-2.5 xs:flex-row sm:w-auto sm:flex-wrap sm:items-center">
                         <Select
                             name="storeCat"
                             value={category}
@@ -321,7 +326,7 @@ export default function StorePage() {
                                 setCategory(event.target.value);
                                 setPage(1);
                             }}
-                            className="!h-9 !w-auto !py-1 text-xs font-bold"
+                            className="!h-9 w-full !py-1 text-xs font-bold sm:!w-auto"
                         >
                             <option value="all">All Categories</option>
                             {categories.map((item) => (
@@ -337,7 +342,7 @@ export default function StorePage() {
                             onChange={(event) =>
                                 setSort(event.target.value)
                             }
-                            className="!h-9 !w-auto !py-1 text-xs font-bold"
+                            className="!h-9 w-full !py-1 text-xs font-bold sm:!w-auto"
                         >
                             {SORT_OPTIONS.map((option) => (
                                 <option

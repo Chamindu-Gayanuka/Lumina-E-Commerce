@@ -26,8 +26,13 @@ export default function SellerOrders() {
     const [tab, setTab] = useState("All");
     const [search, setSearch] = useState("");
     const [advanceTarget, setAdvanceTarget] = useState(null);
+    const [updating, setUpdating] = useState(false);
 
-    const load = useCallback(() => getSellerOrders(sellerId).then(setOrders), [sellerId]);
+    const load = useCallback(
+        () => getSellerOrders(sellerId).then(setOrders),
+        [sellerId]
+    );
+
     useEffect(() => {
         load();
     }, [load]);
@@ -55,139 +60,332 @@ export default function SellerOrders() {
     }, [orders, tab, search]);
 
     const advance = async (status) => {
-        await updateOrderStatus(advanceTarget.id, status);
-        notify(`Order ${advanceTarget.orderNumber} → ${status}`);
-        setAdvanceTarget(null);
-        load();
+        if (!advanceTarget || updating) return;
+        setUpdating(true);
+        try {
+            await updateOrderStatus(advanceTarget.id, status);
+            notify(`Order ${advanceTarget.orderNumber} → ${status}`);
+            setAdvanceTarget(null);
+            await load();
+        } catch (err) {
+            notify(err?.message || "Could not update order status", "error");
+        } finally {
+            setUpdating(false);
+        }
     };
 
-    if (!orders) return <PageSpinner label="Loading your order queue…"/>;
+    if (!orders) {
+        return <PageSpinner label="Loading your order queue…"/>;
+    }
 
     const nextOptions = advanceTarget ? allowedNext(advanceTarget.status) : [];
 
+    const OrderActions = ({order, compact = false}) => {
+        const canAdvance =
+            allowedNext(order.status).filter((s) => s !== "Cancelled").length >
+            0;
+
+        return (
+            <div
+                className={`flex gap-2 ${
+                    compact ? "w-full flex-col xs:flex-row" : "inline-flex justify-end"
+                }`}
+            >
+                {canAdvance && (
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        icon={<FaArrowRight size={10}/>}
+                        className={compact ? "w-full xs:flex-1" : ""}
+                        onClick={() => setAdvanceTarget(order)}
+                    >
+                        Update status
+                    </Button>
+                )}
+                <Button
+                    size="sm"
+                    variant="secondary"
+                    className={compact ? "w-full xs:flex-1" : ""}
+                    onClick={() => navigate(`/seller/orders/${order.id}`)}
+                >
+                    Details
+                </Button>
+            </div>
+        );
+    };
+
     return (
         <div>
-            <div className="flex flex-wrap items-end justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight text-ink-900">Orders</h1>
-                    <p className="mt-1.5 text-sm text-slate-500">Orders containing your products. Update statuses here -
-                        customers track them live.</p>
+            {/* Header */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0 flex-1">
+                    <h1 className="text-2xl font-extrabold tracking-tight text-ink-900 sm:text-3xl">
+                        Orders
+                    </h1>
+                    <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
+                        Orders containing your products. Update statuses here -
+                        customers track them live.
+                    </p>
                 </div>
-                <Button variant="secondary" icon={<FaTruckFast size={12} className="text-primary-600"/>}
-                        onClick={() => notify("Bulk CSV fulfilment lands with the backend phase.", "info")}>
+                <Button
+                    variant="secondary"
+                    className="w-full shrink-0 sm:w-auto"
+                    icon={
+                        <FaTruckFast size={12} className="text-primary-600"/>
+                    }
+                    onClick={() =>
+                        notify(
+                            "Bulk CSV fulfilment lands with the backend phase.",
+                            "info"
+                        )
+                    }
+                >
                     Export / bulk fulfil
                 </Button>
             </div>
 
+            {/* Tabs - scrollable on small screens */}
             <Tabs
-                className="mt-7 overflow-x-auto"
-                items={[{key: "All", label: "All", count: counts.All}, ...ORDER_STATUSES.map((s) => ({
-                    key: s,
-                    label: s,
-                    count: counts[s]
-                }))]}
+                className="mt-6 overflow-x-auto sm:mt-7"
+                items={[
+                    {key: "All", label: "All", count: counts.All},
+                    ...ORDER_STATUSES.map((s) => ({
+                        key: s,
+                        label: s,
+                        count: counts[s],
+                    })),
+                ]}
                 active={tab}
                 onChange={setTab}
             />
 
-            <div className="mt-5 flex items-center justify-between gap-3">
-                <SearchBar value={search} onChange={setSearch} placeholder="Search order number or customer…"
-                           className="w-full max-w-sm"/>
+            {/* Search */}
+            <div className="mt-5">
+                <SearchBar
+                    value={search}
+                    onChange={setSearch}
+                    placeholder="Search order number or customer…"
+                    className="w-full sm:max-w-sm"
+                />
             </div>
 
             <div className="lum-card mt-4 p-4 sm:p-5">
                 {filtered.length === 0 ? (
-                    <EmptyState title="No orders in this view"
-                                message="When shoppers check out with your products, the queue fills up here."/>
-                ) : (
-                    <DataTable
-                        columns={[
-                            {
-                                key: "orderNumber",
-                                header: "Order",
-                                render: (o) => (
-                                    <div>
-                                        <p className="font-extrabold text-ink-900">{o.orderNumber}</p>
-                                        <p className="text-xs text-slate-400">{formatDate(o.placedAt)}</p>
-                                    </div>
-                                ),
-                            },
-                            {
-                                key: "customer",
-                                header: "Customer",
-                                render: (o) => (
-                                    <div>
-                                        <p className="font-semibold text-ink-800">{o.customerName || "Guest"}</p>
-                                        <p className="text-xs text-slate-400">{o.items.length} item{o.items.length > 1 ? "s" : ""}</p>
-                                    </div>
-                                ),
-                            },
-                            {
-                                key: "total",
-                                header: "Total",
-                                render: (o) => <p
-                                    className="font-bold text-ink-900">{formatPrice(o.totalAmount, {decimals: true})}</p>
-                            },
-                            {
-                                key: "payment",
-                                header: "Payment",
-                                render: (o) => <PaymentStatusBadge status={o.payment.status}/>
-                            },
-                            {key: "status", header: "Fulfilment", render: (o) => <OrderStatusBadge status={o.status}/>},
-                            {
-                                key: "actions",
-                                header: "",
-                                className: "text-right",
-                                render: (o) => (
-                                    <div className="inline-flex justify-end gap-2">
-                                        {allowedNext(o.status).filter((s) => s !== "Cancelled").length > 0 && (
-                                            <Button size="sm" variant="outline" icon={<FaArrowRight size={10}/>}
-                                                    onClick={() => setAdvanceTarget(o)}>
-                                                Update status
-                                            </Button>
-                                        )}
-                                        <Button size="sm" variant="secondary"
-                                                onClick={() => navigate(`/seller/orders/${o.id}`)}>
-                                            Details
-                                        </Button>
-                                    </div>
-                                ),
-                            },
-                        ]}
-                        rows={filtered}
+                    <EmptyState
+                        title="No orders in this view"
+                        message="When shoppers check out with your products, the queue fills up here."
                     />
+                ) : (
+                    <>
+                        {/* Mobile cards */}
+                        <div className="space-y-3 md:hidden">
+                            {filtered.map((o) => (
+                                <article
+                                    key={o.id}
+                                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                                >
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <p className="font-extrabold text-ink-900">
+                                                {o.orderNumber}
+                                            </p>
+                                            <p className="mt-0.5 text-xs text-slate-400">
+                                                {formatDate(o.placedAt)}
+                                            </p>
+                                        </div>
+                                        <OrderStatusBadge status={o.status}/>
+                                    </div>
+
+                                    <div className="mt-3 grid grid-cols-2 gap-3">
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                                Customer
+                                            </p>
+                                            <p className="mt-0.5 truncate text-sm font-semibold text-ink-800">
+                                                {o.customerName || "Guest"}
+                                            </p>
+                                            <p className="text-xs text-slate-400">
+                                                {o.items?.length || 0} item
+                                                {(o.items?.length || 0) !== 1
+                                                    ? "s"
+                                                    : ""}
+                                            </p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                                Total
+                                            </p>
+                                            <p className="mt-0.5 text-sm font-extrabold text-ink-900">
+                                                {formatPrice(o.totalAmount, {
+                                                    decimals: true,
+                                                })}
+                                            </p>
+                                            <div className="mt-1 flex justify-end">
+                                                {o.payment?.status ? (
+                                                    <PaymentStatusBadge
+                                                        status={o.payment.status}
+                                                    />
+                                                ) : null}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-3 border-t border-slate-100 pt-3">
+                                        <OrderActions order={o} compact/>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+
+                        {/* Desktop table */}
+                        <div className="hidden overflow-x-auto md:block">
+                            <div className="min-w-[860px]">
+                                <DataTable
+                                    columns={[
+                                        {
+                                            key: "orderNumber",
+                                            header: "Order",
+                                            render: (o) => (
+                                                <div>
+                                                    <p className="font-extrabold text-ink-900">
+                                                        {o.orderNumber}
+                                                    </p>
+                                                    <p className="text-xs text-slate-400">
+                                                        {formatDate(o.placedAt)}
+                                                    </p>
+                                                </div>
+                                            ),
+                                        },
+                                        {
+                                            key: "customer",
+                                            header: "Customer",
+                                            render: (o) => (
+                                                <div>
+                                                    <p className="font-semibold text-ink-800">
+                                                        {o.customerName ||
+                                                            "Guest"}
+                                                    </p>
+                                                    <p className="text-xs text-slate-400">
+                                                        {o.items?.length || 0}{" "}
+                                                        item
+                                                        {(o.items?.length ||
+                                                            0) !== 1
+                                                            ? "s"
+                                                            : ""}
+                                                    </p>
+                                                </div>
+                                            ),
+                                        },
+                                        {
+                                            key: "total",
+                                            header: "Total",
+                                            render: (o) => (
+                                                <p className="font-bold text-ink-900">
+                                                    {formatPrice(
+                                                        o.totalAmount,
+                                                        {decimals: true}
+                                                    )}
+                                                </p>
+                                            ),
+                                        },
+                                        {
+                                            key: "payment",
+                                            header: "Payment",
+                                            render: (o) =>
+                                                o.payment?.status ? (
+                                                    <PaymentStatusBadge
+                                                        status={
+                                                            o.payment.status
+                                                        }
+                                                    />
+                                                ) : (
+                                                    <span className="text-xs text-slate-400">
+                                                        -
+                                                    </span>
+                                                ),
+                                        },
+                                        {
+                                            key: "status",
+                                            header: "Fulfilment",
+                                            render: (o) => (
+                                                <OrderStatusBadge
+                                                    status={o.status}
+                                                />
+                                            ),
+                                        },
+                                        {
+                                            key: "actions",
+                                            header: "",
+                                            className: "text-right",
+                                            render: (o) => (
+                                                <OrderActions order={o}/>
+                                            ),
+                                        },
+                                    ]}
+                                    rows={filtered}
+                                />
+                            </div>
+                        </div>
+                    </>
                 )}
             </div>
 
             {/* Status update modal */}
             <Modal
                 open={Boolean(advanceTarget)}
-                onClose={() => setAdvanceTarget(null)}
-                title={`Update ${advanceTarget?.orderNumber}`}
-                subtitle={advanceTarget ? `Currently ${advanceTarget.status} · placed ${formatDateTime(advanceTarget.placedAt)}` : ""}
+                onClose={() => !updating && setAdvanceTarget(null)}
+                title={`Update ${advanceTarget?.orderNumber || ""}`}
+                subtitle={
+                    advanceTarget
+                        ? `Currently ${advanceTarget.status} · placed ${formatDateTime(
+                            advanceTarget.placedAt
+                        )}`
+                        : ""
+                }
                 size="sm"
             >
-                <p className="text-sm text-slate-500">Choose the next step in fulfilment. The customer's tracking
-                    timeline updates instantly.</p>
+                <p className="text-sm leading-relaxed text-slate-500">
+                    Choose the next step in fulfilment. The customer&apos;s
+                    tracking timeline updates instantly.
+                </p>
+
                 <div className="mt-4 space-y-2.5">
-                    {nextOptions.length === 0 &&
-                        <EmptyState title="No transitions available" message="This order is finalised."/>}
+                    {nextOptions.length === 0 && (
+                        <EmptyState
+                            title="No transitions available"
+                            message="This order is finalised."
+                        />
+                    )}
+
                     {nextOptions.map((status) => (
                         <button
                             key={status}
                             type="button"
+                            disabled={updating}
                             onClick={() => advance(status)}
-                            className={`flex w-full items-center justify-between rounded-xl border-2 px-4 py-3.5 text-left transition-all hover:shadow-sm ${
-                                status === "Cancelled" ? "border-red-200 bg-red-50/40 hover:border-red-400" : "border-slate-200 bg-white hover:border-primary-500"
+                            className={`flex w-full flex-col gap-2 rounded-xl border-2 px-4 py-3.5 text-left transition-all hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60 sm:flex-row sm:items-center sm:justify-between ${
+                                status === "Cancelled"
+                                    ? "border-red-200 bg-red-50/40 hover:border-red-400"
+                                    : "border-slate-200 bg-white hover:border-primary-500"
                             }`}
                         >
-              <span className="text-sm font-bold text-ink-900">
-                {status === "Processing" && "Mark as Processing - pack & label"}
-                  {status === "Shipped" && "Mark as Shipped - hand to courier"}
-                  {status === "Delivered" && "Mark as Delivered - COD collected"}
-                  {status === "Cancelled" && "Cancel this order"}
-              </span>
-                            <Badge tone={status === "Cancelled" ? "red" : "teal"} uppercase>→ {status}</Badge>
+                            <span className="text-sm font-bold leading-snug text-ink-900">
+                                {status === "Processing" &&
+                                    "Mark as Processing - pack & label"}
+                                {status === "Shipped" &&
+                                    "Mark as Shipped - hand to courier"}
+                                {status === "Delivered" &&
+                                    "Mark as Delivered - COD collected"}
+                                {status === "Cancelled" && "Cancel this order"}
+                            </span>
+                            <Badge
+                                tone={
+                                    status === "Cancelled" ? "red" : "teal"
+                                }
+                                uppercase
+                            >
+                                → {status}
+                            </Badge>
                         </button>
                     ))}
                 </div>

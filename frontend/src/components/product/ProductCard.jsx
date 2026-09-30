@@ -5,11 +5,13 @@ import RatingStars from "../ui/RatingStars";
 import ProductImage from "./ProductImage";
 import {formatPrice} from "../../utils/format";
 import {useCart} from "../../context/CartContext";
+import useGate from "../../hooks/useGate";
 import {useToast} from "../../context/ToastContext";
 
 export default function ProductCard({product, priority = false}) {
     const cart = useCart();
     const {notify} = useToast();
+    const gate = useGate();
     const info = cart.stockInfo(product.id);
     const out = info.stock === 0;
     const maxed = !out && info.remaining <= 0;
@@ -61,16 +63,18 @@ export default function ProductCard({product, priority = false}) {
                 <button
                     type="button"
                     disabled={out || maxed}
-                    onClick={() => {
-                        const res = cart.add(product.id, 1);
-                        if (res.added > 0) {
-                            notify(res.capped ? `Only ${res.stock} in stock - ${res.inCart} now in your cart` : `${product.name} added to cart`, res.capped ? "info" : "success");
-                        } else if (res.soldOut) {
-                            notify(`${product.name} is out of stock`, "error");
-                        } else {
-                            notify(`All ${res.stock} available are already in your cart`, "info");
-                        }
-                    }}
+                    onClick={() =>
+                        gate(() => {
+                            const res = cart.add(product.id, 1);
+                            if (res.added > 0) {
+                                notify(res.capped ? `Only ${res.stock} in stock - ${res.inCart} now in your cart` : `${product.name} added to cart`, res.capped ? "info" : "success");
+                            } else if (res.soldOut) {
+                                notify(`${product.name} is out of stock`, "error");
+                            } else {
+                                notify(`All ${res.stock} available are already in your cart`, "info");
+                            }
+                        })
+                    }
                     className="mt-3.5 inline-flex items-center justify-center gap-2 rounded-xl bg-primary-50 py-2 text-xs font-bold text-primary-700 transition-colors hover:bg-primary-600 hover:text-white disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
                 >
                     <FaCartPlus size={12}/>
