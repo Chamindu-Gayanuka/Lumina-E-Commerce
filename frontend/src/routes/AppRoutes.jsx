@@ -47,6 +47,11 @@ import SellerOrderDetails from "../pages/seller/OrderDetails";
 // Admin Routes
 import AdminDashboard from "../pages/admin/Dashboard";
 import AdminSettings from "../pages/admin/Settings";
+import AdminUsers from "../pages/admin/Users";
+import AdminUserDetails from "../pages/admin/UserDetails";
+import AdminSellers from "../pages/admin/Sellers";
+import AdminSellerDetails from "../pages/admin/SellerDetails";
+import AdminProducts from "../pages/admin/Products";
 
 // Company & Help Pages
 import InfoPage from "../pages/info/InfoPage";
@@ -118,6 +123,11 @@ export default function AppRoutes() {
                 <Route element={<AdminLayout />}>
                     <Route index element={<AdminDashboard />} />
                     <Route path="settings" element={<AdminSettings />} />
+                    <Route path="users" element={<AdminUsers />} />
+                    <Route path="users/:userId" element={<AdminUserDetails />} />
+                    <Route path="sellers" element={<AdminSellers />} />
+                    <Route path="sellers/:sellerId" element={<AdminSellerDetails />} />
+                    <Route path="products" element={<AdminProducts />} />
                 </Route>
             </Route>
 

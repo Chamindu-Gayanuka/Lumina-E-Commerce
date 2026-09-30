@@ -34,6 +34,60 @@ export async function updateSellerProfile(id, patch) {
     return store.updateSeller(id, patch);
 }
 
+/** Admin decision on a seller application (Approve / Reject with reason). */
+export async function reviewSellerApplication(id, decision, reason) {
+    await delay(240);
+    return store.updateSeller(id, {
+        approvalStatus: decision,
+        reviewedAt: new Date().toISOString(),
+        rejectionReason: decision === "Rejected" ? reason : null,
+        accountStatus: decision === "Approved" ? "Active" : "Inactive",
+    });
+}
+
+/** Everything the admin User Details screen shows, in one round-trip. */
+export async function getUserDetail(userId) {
+    await delay(140);
+    const user = store.getUserById(userId);
+    if (!user) return null;
+    const orders = store.getAllOrders().filter((o) => o.customerId === userId);
+    const paid = orders.filter((o) => o.status !== "Cancelled");
+    const all = store.getAllOrders();
+    const avg = all.length ? all.reduce((s, o) => s + o.totalAmount, 0) / all.length : 0;
+    return {
+        user,
+        orders,
+        stats: {
+            totalOrders: orders.length,
+            totalSpent: paid.reduce((s, o) => s + o.totalAmount, 0),
+            cancelled: orders.filter((o) => o.status === "Cancelled").length,
+            vsAverage: avg ? Math.round(((paid.reduce((s, o) => s + o.totalAmount, 0) / Math.max(paid.length, 1) - avg) / avg) * 100) : 0,
+        },
+    };
+}
+
+/** Admin Seller Details: profile + ALL products (incl. unlisted) + history. */
+export async function getAdminSellerDetail(sellerId) {
+    await delay(160);
+    const sellers = store.getSellers();
+    const seller = sellers.find((x) => x.id === sellerId);
+    if (!seller) return null;
+    const products = store.getProducts().filter((p) => p.sellerId === sellerId);
+    const orders = store.getOrdersBySeller(sellerId);
+    const delivered = orders.filter((o) => o.status === "Delivered");
+    return {
+        seller,
+        products,
+        orders,
+        stats: {
+            totalProducts: products.length,
+            activeProducts: products.filter((p) => p.status === "Active").length,
+            totalOrders: orders.length,
+            lifetimeRevenue: delivered.reduce((s, o) => s + o.totalAmount, 0),
+        },
+    };
+}
+
 /* Categories (admin + shop nav) */
 export async function listCategories() {
     await delay(80);
