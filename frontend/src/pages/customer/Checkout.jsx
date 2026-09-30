@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {Link, useNavigate} from "react-router-dom";
+import {Link, Navigate, useNavigate} from "react-router-dom";
 import {FaCircleCheck, FaCreditCard, FaLandmark, FaLocationDot, FaMoneyBill1Wave} from "react-icons/fa6";
 import CheckoutStepper from "../../components/ui/CheckoutStepper";
 import Button from "../../components/ui/Button";
@@ -19,6 +19,7 @@ import {placeOrder} from "../../services/orderService";
 import {useAuth} from "../../context/AuthContext";
 import {useCart} from "../../context/CartContext";
 import {useToast} from "../../context/ToastContext";
+import {PageSpinner} from "../../components/ui/Spinner";
 
 /* ── Payment method selector (radio cards) ──────────────────────────────── */
 function PaymentMethodSelector({value, onChange}) {
@@ -106,7 +107,7 @@ function SectionTitle({number, title, note}) {
 
 /* ── Page ────────────────────────────────────────────────────────────────── */
 export default function Checkout() {
-    const {user} = useAuth();
+    const {user, ready} = useAuth();
     const cart = useCart();
     const navigate = useNavigate();
     const {notify} = useToast();
@@ -124,6 +125,9 @@ export default function Checkout() {
     const [payment, setPayment] = useState("cod");
     const [errors, setErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
+
+    if (!ready) return <PageSpinner label="Checking session…"/>;
+    if (!user) return <Navigate to="/login" replace state={{from: "/checkout"}}/>;
 
     if (!cart.items.length) {
         return (
@@ -212,7 +216,7 @@ export default function Checkout() {
                 </div>
             )}
 
-            <form onSubmit={submit} className="mt-10 grid items-start gap-10 lg:grid-cols-[1fr_400px]">
+            <form onSubmit={submit} className="mt-10 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_400px]]">
                 <div className="min-w-0 space-y-10">
                     {/* 1 - Delivery */}
                     <section>

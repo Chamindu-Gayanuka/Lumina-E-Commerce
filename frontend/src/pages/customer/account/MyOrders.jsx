@@ -1,4 +1,5 @@
 import React, {useCallback, useEffect, useMemo, useState} from "react";
+import useUrlPage from "../../../hooks/useUrlPage";
 import {useNavigate, useSearchParams} from "react-router-dom";
 import {FaInbox, FaWandMagicSparkles} from "react-icons/fa6";
 import Tabs from "../../../components/ui/Tabs";
@@ -36,7 +37,7 @@ export default function MyOrders() {
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("");
     const [range, setRange] = useState("all");
-    const [page, setPage] = useState(1);
+    const [page, setPage] = useUrlPage();
     const [demoEmpty, setDemoEmpty] = useState(false);
     const [cancelTarget, setCancelTarget] = useState(null);
     const [cancelReason, setCancelReason] = useState("");

@@ -43,6 +43,39 @@ export const store = {
         const p = state.products.find((x) => x.id === id || x.slug === id);
         return p ? clone(p) : null;
     },
+    /** A customer submits a product review - rating, histogram and count update live. */
+    addProductReview(productId, {userId, userName, rating, title, comment, verified}) {
+        const p = state.products.find((x) => x.id === productId);
+        if (!p) return null;
+        const star = Math.max(1, Math.min(5, Math.round(Number(rating) || 5)));
+        const review = {
+            id: `r-${productId}-${Date.now()}`,
+            user: userName,
+            userId: userId || null,
+            rating: star,
+            date: new Date().toISOString().slice(0, 10),
+            title: title?.trim() || "My review",
+            comment: comment.trim(),
+            own: Boolean(userId),
+            verified: Boolean(verified),
+        };
+        p.reviews = [review, ...(p.reviews || [])];
+        const prevCount = p.reviewCount || 0;
+        const prevRating = p.rating || 0;
+        p.reviewCount = prevCount + 1;
+        p.rating = Math.round(((prevRating * prevCount + star) / p.reviewCount) * 10) / 10;
+        const breakdown = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, ...(p.ratingBreakdown || {})};
+        breakdown[star] = (breakdown[star] || 0) + 1;
+        p.ratingBreakdown = breakdown;
+        return clone(review);
+    },
+    /** Did this customer already buy (and receive) this product? */
+    hasDeliveredPurchase(userId, productId) {
+        const all = [...state.orders, ...state.platformOrders];
+        return all.some(
+            (o) => o.customerId === userId && o.status === "Delivered" && (o.items || []).some((it) => it.productId === productId)
+        );
+    },
     getProductForDetails(id) {
         const p = state.products.find((x) => x.id === id || x.slug === id);
         if (!p) return null;
@@ -148,8 +181,8 @@ export const store = {
                 return {
                     ...s,
                     productCount: products.length,
-                    ownerName: user ? user.name : "—",
-                    ownerEmail: user ? user.email : "—",
+                    ownerName: user ? user.name : "-",
+                    ownerEmail: user ? user.email : "-",
                     products: products.map((p) => p.id)
                 };
             })
@@ -307,6 +340,9 @@ export const store = {
         if (status === "Cancelled") o.payment = {...o.payment, status: "Cancelled"};
         return clone(o);
     },
+    nextOrderNumber() {
+        return state.orders[0]?.orderNumber || "#ORD-2026-00187";
+    },
 
     /* ── stats ── */
     monthlySales() {
@@ -324,10 +360,26 @@ export const store = {
     platformSnapshot() {
         const revenue = state.monthlySales.reduce((s, m) => s + m.revenue, 0);
         const orders = [...state.orders, ...state.platformOrders];
+        const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10);
+        const prevMonthStart = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toISOString().slice(0, 10);
+        const joinedIn = (start, end) => state.users.filter((u) => u.joinedAt >= start && (!end || u.joinedAt < end)).length;
         return {
             revenue,
+            avgOrderValue: orders.length ? Math.round(revenue / orders.length) : 0,
+            totalUsers: state.users.length,
+            activeUsers: state.users.filter((u) => u.status === "Active").length,
+            inactiveUsers: state.users.filter((u) => u.status !== "Active").length,
+            newUsersThisMonth: state.users.filter((u) => u.joinedAt >= monthStart).length,
+            usersMonthDelta: joinedIn(monthStart) - joinedIn(prevMonthStart, monthStart),
+            salesMonthDeltaPct: (() => {
+                const ms = state.monthlySales;
+                if (ms.length < 2 || !ms[ms.length - 2].revenue) return 0;
+                return Math.round(((ms[ms.length - 1].revenue - ms[ms.length - 2].revenue) / ms[ms.length - 2].revenue) * 100);
+            })(),
             totalOrders: orders.length,
             totalProducts: state.products.length,
+            activeProducts: state.products.filter((p) => p.status === "Active").length,
+            pendingOrders: orders.filter((o) => o.status === "Pending").length,
             totalCustomers: state.users.filter((u) => u.role === "Customer").length,
             totalSellers: state.sellers.length,
             pendingSellers: state.sellers.filter((s) => s.approvalStatus === "Pending").length,

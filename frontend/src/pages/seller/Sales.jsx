@@ -48,29 +48,56 @@ export default function SellerSales() {
 
     return (
         <div>
-            <div className="flex flex-wrap items-end justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight text-ink-900">Sales Overview</h1>
-                    <p className="mt-1.5 text-sm text-slate-500">Revenue performance across your storefront (mock
-                        analytics until the API phase).</p>
+            {/* Header */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0 flex-1">
+                    <h1 className="text-2xl font-extrabold tracking-tight text-ink-900 sm:text-3xl">
+                        Sales Overview
+                    </h1>
+                    <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
+                        Revenue performance across your storefront (mock analytics until the API phase).
+                    </p>
                 </div>
-                <Select name="salesRange" value={range} onChange={(e) => setRange(e.target.value)}
-                        className="h-10 w-auto text-sm">
+
+                <Select
+                    name="salesRange"
+                    value={range}
+                    onChange={(e) => setRange(e.target.value)}
+                    className="h-10 w-full text-sm sm:w-auto"
+                >
                     <option value="12m">Last 12 months</option>
                     <option value="6m">Last 6 months</option>
                     <option value="3m">Last quarter</option>
                 </Select>
             </div>
 
-            <div className="mt-7 grid gap-5 sm:grid-cols-3">
-                <StatCard label="Revenue" value={formatPrice(revenue)} icon={<FaSackDollar size={18}/>} tone="teal"
-                          trend={8.1}/>
-                <StatCard label="Orders" value={orderCount} icon={<FaCoins size={18}/>} tone="blue" trend={4.6}/>
-                <StatCard label="Avg. order value" value={formatPrice(aov)} icon={<FaCalculator size={18}/>}
-                          tone="purple" trend={-1.8}/>
+            {/* Stats Cards */}
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:mt-7 sm:grid-cols-3 sm:gap-5">
+                <StatCard
+                    label="Revenue"
+                    value={formatPrice(revenue)}
+                    icon={<FaSackDollar size={18}/>}
+                    tone="teal"
+                    trend={8.1}
+                />
+                <StatCard
+                    label="Orders"
+                    value={orderCount}
+                    icon={<FaCoins size={18}/>}
+                    tone="blue"
+                    trend={4.6}
+                />
+                <StatCard
+                    label="Avg. order value"
+                    value={formatPrice(aov)}
+                    icon={<FaCalculator size={18}/>}
+                    tone="purple"
+                    trend={-1.8}
+                />
             </div>
 
-            <div className="mt-6 grid gap-6 xl:grid-cols-2">
+            {/* Main Trends Charts */}
+            <div className="mt-6 grid grid-cols-1 gap-5 lg:gap-6 xl:grid-cols-2">
                 <ChartCard title="Revenue trend" subtitle={`Rs. collected over ${RANGES[range]} months`}>
                     <SalesArea data={sliced} color="#0d9488"/>
                 </ChartCard>
@@ -79,30 +106,44 @@ export default function SellerSales() {
                 </ChartCard>
             </div>
 
-            <div className="mt-6 grid items-start gap-6 xl:grid-cols-[1fr_420px]">
-                <section className="lum-card">
-                    <div className="border-b border-slate-100 px-6 py-4">
-                        <h3 className="text-base font-extrabold tracking-tight text-ink-900">Monthly breakdown</h3>
+            {/* Breakdown Table and Top Products */}
+            <div className="mt-6 grid grid-cols-1 items-start gap-5 lg:gap-6 xl:grid-cols-[1fr_420px]">
+                <section className="lum-card overflow-hidden">
+                    <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+                        <h3 className="text-base font-extrabold tracking-tight text-ink-900">
+                            Monthly breakdown
+                        </h3>
                     </div>
-                    <DataTable
-                        dense
-                        columns={[
-                            {
-                                key: "month",
-                                header: "Month",
-                                render: (r) => <span className="font-bold text-ink-900">{r.month}</span>
-                            },
-                            {
-                                key: "revenue",
-                                header: "Revenue",
-                                render: (r) => <span className="font-semibold text-emerald-600">{r.revenue}</span>
-                            },
-                            {key: "orders", header: "Orders"},
-                            {key: "aov", header: "AOV", render: (r) => <span className="text-slate-500">{r.aov}</span>},
-                        ]}
-                        rows={[...monthly].reverse()}
-                    />
+                    {/* Safe scrollable container for narrow mobile screens */}
+                    <div className="overflow-x-auto">
+                        <div className="min-w-[480px]">
+                            <DataTable
+                                dense
+                                columns={[
+                                    {
+                                        key: "month",
+                                        header: "Month",
+                                        render: (r) => <span className="font-bold text-ink-900">{r.month}</span>
+                                    },
+                                    {
+                                        key: "revenue",
+                                        header: "Revenue",
+                                        render: (r) => <span
+                                            className="font-semibold text-emerald-600">{r.revenue}</span>
+                                    },
+                                    {key: "orders", header: "Orders"},
+                                    {
+                                        key: "aov",
+                                        header: "AOV",
+                                        render: (r) => <span className="text-slate-500">{r.aov}</span>
+                                    },
+                                ]}
+                                rows={[...monthly].reverse()}
+                            />
+                        </div>
+                    </div>
                 </section>
+
                 <ChartCard title="Top products" subtitle="Lifetime revenue by SKU">
                     <TopProductsBars data={stats.topProducts}/>
                 </ChartCard>

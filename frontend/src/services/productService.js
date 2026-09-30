@@ -62,6 +62,8 @@ export async function listProducts(query = {}) {
     if (availability === "in") items = items.filter((p) => p.stock > 0);
     if (availability === "out") items = items.filter((p) => p.stock === 0);
 
+    // With a search query the "newest" default becomes relevance order;
+    // any explicitly chosen sort (price/rating) still wins.
     if (!hasSearch || (sort && sort !== "newest")) items = sortProducts(items, sort);
     const total = items.length;
     const pages = Math.max(1, Math.ceil(total / perPage));
@@ -154,4 +156,15 @@ export async function getInventory() {
     }
     await delay(140);
     return store.getInventory();
+}
+
+/* ── Customer reviews (frontend-only until the API lands) ─────────────── */
+export async function submitProductReview(productId, payload) {
+    await new Promise((r) => setTimeout(r, 220));
+    return store.addProductReview(productId, payload);
+}
+
+export async function isVerifiedPurchase(userId, productId) {
+    await new Promise((r) => setTimeout(r, 60));
+    return store.hasDeliveredPurchase(userId, productId);
 }

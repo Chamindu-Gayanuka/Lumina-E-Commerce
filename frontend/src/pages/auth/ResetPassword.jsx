@@ -29,7 +29,7 @@ export default function ResetPassword() {
         await resetPassword();
         setSubmitting(false);
         setDone(true);
-        notify("Password updated — you can sign in now.");
+        notify("Password updated - you can sign in now.");
         setTimeout(() => navigate("/login"), 1600);
     };
 

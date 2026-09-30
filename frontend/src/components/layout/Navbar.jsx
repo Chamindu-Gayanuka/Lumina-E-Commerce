@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
-
 import {
     FaBars,
     FaCartShopping,
@@ -14,10 +13,10 @@ import {
     FaUserShield,
     FaXmark,
 } from "react-icons/fa6";
-
 import Dropdown, {DropdownDivider, DropdownItem} from "../ui/Dropdown";
 import {useAuth, dashboardPathByRole} from "../../context/AuthContext";
 import {useCart} from "../../context/CartContext";
+import NotificationsBell from "../common/NotificationsBell";
 import {useToast} from "../../context/ToastContext";
 import CategoryIcon from "../ui/CategoryIcon";
 
@@ -99,6 +98,7 @@ export default function Navbar() {
 
                 {/* Categories · Cart · Account - desktop only (mobile lives in the menu) */}
                 <div className="ml-auto hidden items-center gap-1 lg:flex xl:gap-2">
+                    {isAuthenticated && <NotificationsBell/>}
                     <Dropdown
                         width="w-60"
                         align="left"
@@ -188,6 +188,13 @@ export default function Navbar() {
                         </Link>
                     )}
                 </div>
+
+                {/* Mobile bell - signed-in only, sits next to the menu toggle */}
+                {isAuthenticated && (
+                    <div className="lg:hidden">
+                        <NotificationsBell/>
+                    </div>
+                )}
 
                 {/* Menu button - mobile / tablet only */}
                 <button
