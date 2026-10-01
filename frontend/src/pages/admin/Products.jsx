@@ -69,7 +69,7 @@ export default function AdminProducts() {
     );
 
     const sellerName = (id) =>
-        sellers.find((s) => s.id === id)?.storeName || "—";
+        sellers.find((s) => s.id === id)?.storeName || "-";
 
     const clearFilters = () => {
         setSearch("");

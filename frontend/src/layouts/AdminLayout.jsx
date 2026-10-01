@@ -10,7 +10,6 @@ import {
     FaTriangleExclamation,
     FaBan,
     FaChartLine,
-    FaServer,
     FaGear,
 } from "react-icons/fa6";
 import DashboardShell from "./DashboardShell";
@@ -42,7 +41,6 @@ export function buildAdminNav() {
         {to: "/admin/inventory/out", label: "Out of Stock", icon: <FaBan size={14}/>},
         {section: "Reports"},
         {to: "/admin/reports/sales", label: "Sales Report", icon: <FaChartLine size={14}/>},
-        {to: "/admin/system", label: "System Statistics", icon: <FaServer size={14}/>},
         {to: "/admin/settings", label: "Settings", icon: <FaGear size={14}/>},
     ];
 }
