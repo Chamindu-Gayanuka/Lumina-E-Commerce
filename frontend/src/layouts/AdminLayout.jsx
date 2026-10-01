@@ -10,10 +10,10 @@ import {
     FaTriangleExclamation,
     FaBan,
     FaChartLine,
-    FaServer,
     FaGear,
 } from "react-icons/fa6";
 import DashboardShell from "./DashboardShell";
+import Footer from "../components/layout/Footer";
 import store from "../data/store";
 
 export function buildAdminNav() {
@@ -28,7 +28,7 @@ export function buildAdminNav() {
             label: "Seller Management",
             icon: <FaStore size={14}/>,
             count: pending,
-            countTone: "amber"
+            countTone: "amber",
         },
         {section: "Catalog"},
         {to: "/admin/products", label: "Products", icon: <FaBoxOpen size={14}/>},
@@ -41,17 +41,21 @@ export function buildAdminNav() {
         {to: "/admin/inventory/out", label: "Out of Stock", icon: <FaBan size={14}/>},
         {section: "Reports"},
         {to: "/admin/reports/sales", label: "Sales Report", icon: <FaChartLine size={14}/>},
-        {to: "/admin/system", label: "System Statistics", icon: <FaServer size={14}/>},
-        {to: "/admin/settings", label: "Settings", icon: <FaGear size={14}/>}
+        {to: "/admin/settings", label: "Settings", icon: <FaGear size={14}/>},
     ];
 }
 
 export default function AdminLayout() {
     return (
-        <DashboardShell
-            role="admin"
-            navItems={buildAdminNav()}
-            globalSearch
-        />
+        <div className="flex min-h-screen flex-col">
+            <div className="flex-1">
+                <DashboardShell
+                    role="admin"
+                    navItems={buildAdminNav()}
+                    globalSearch
+                />
+            </div>
+            <Footer/>
+        </div>
     );
 }

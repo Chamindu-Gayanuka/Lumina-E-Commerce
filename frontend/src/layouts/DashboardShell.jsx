@@ -17,12 +17,12 @@ import NotificationsBell from "../components/common/NotificationsBell";
 import {formatPrice} from "../utils/format";
 
 const TITLES = {
-    admin: {label: "Admin", tint: "bg-ink-900 text-white"},
-    seller: {label: "Seller Hub", tint: "bg-primary-600 text-white"},
+    admin: {label: "Admin Dashboard", tint: "bg-primary-100 text-primary-800"},
+    seller: {label: "Seller Hub", tint: "bg-primary-100 text-primary-800"},
     customer: {label: "My Account", tint: "bg-primary-100 text-primary-800"},
 };
 
-/* ── Admin "Search everywhere" box - searches the mock store on the client ── */
+/* ── Admin "Search everywhere" box ── */
 function GlobalSearch() {
     const [q, setQ] = useState("");
     const [open, setOpen] = useState(false);
@@ -30,7 +30,8 @@ function GlobalSearch() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const onDown = (e) => ref.current && !ref.current.contains(e.target) && setOpen(false);
+        const onDown = (e) =>
+            ref.current && !ref.current.contains(e.target) && setOpen(false);
         const onKey = (e) => e.key === "Escape" && setOpen(false);
         document.addEventListener("mousedown", onDown);
         document.addEventListener("keydown", onKey);
@@ -44,6 +45,7 @@ function GlobalSearch() {
         const term = q.trim().toLowerCase();
         if (term.length < 2) return [];
         const hit = (t) => String(t || "").toLowerCase().includes(term);
+
         const users = store
             .getUsers()
             .filter((u) => hit(u.name) || hit(u.email))
@@ -53,19 +55,26 @@ function GlobalSearch() {
                 icon: <FaUser size={10}/>,
                 title: u.name,
                 sub: u.email,
-                to: `/admin/users/${u.id}`
+                to: `/admin/users/${u.id}`,
             }));
+
         const sellers = store
             .getSellers()
-            .filter((s) => hit(s.storeName) || hit(s.businessName) || hit(s.ownerEmail))
+            .filter(
+                (s) =>
+                    hit(s.storeName) ||
+                    hit(s.businessName) ||
+                    hit(s.ownerEmail)
+            )
             .slice(0, 3)
             .map((s) => ({
                 key: `s-${s.id}`,
                 icon: <FaStore size={10}/>,
                 title: s.storeName,
                 sub: `${s.approvalStatus} · ${s.ownerEmail}`,
-                to: `/admin/sellers/${s.id}`
+                to: `/admin/sellers/${s.id}`,
             }));
+
         const orders = store
             .getAllOrders()
             .filter((o) => hit(o.orderNumber) || hit(o.customerName))
@@ -77,6 +86,7 @@ function GlobalSearch() {
                 sub: `${o.customerName} · ${formatPrice(o.totalAmount)}`,
                 to: `/admin/orders?q=${encodeURIComponent(o.orderNumber)}`,
             }));
+
         const products = store
             .getProducts()
             .filter((p) => hit(p.name))
@@ -86,8 +96,9 @@ function GlobalSearch() {
                 icon: <FaBoxOpen size={10}/>,
                 title: p.name,
                 sub: `Rs. ${p.price.toLocaleString("en-LK")} · stock ${p.stock}`,
-                to: `/admin/products?q=${encodeURIComponent(p.name)}`
+                to: `/admin/products?q=${encodeURIComponent(p.name)}`,
             }));
+
         return [
             {label: "Customers & admins", rows: users},
             {label: "Sellers", rows: sellers},
@@ -103,12 +114,16 @@ function GlobalSearch() {
     };
 
     return (
-        <div className="relative w-full max-w-md" ref={ref}>
+        <div className="relative w-full min-w-0" ref={ref}>
             <form
                 role="search"
                 onSubmit={(e) => {
                     e.preventDefault();
-                    if (q.trim()) navigate(`/admin/users?q=${encodeURIComponent(q.trim())}`);
+                    if (q.trim()) {
+                        navigate(
+                            `/admin/users?q=${encodeURIComponent(q.trim())}`
+                        );
+                    }
                     setOpen(false);
                 }}
             >
@@ -118,7 +133,8 @@ function GlobalSearch() {
                 <div className="relative">
                     <FaMagnifyingGlass
                         className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-                        size={12}/>
+                        size={12}
+                    />
                     <input
                         id="admin-everywhere-search"
                         type="search"
@@ -134,15 +150,20 @@ function GlobalSearch() {
                     />
                 </div>
             </form>
+
             {open && q.trim().length >= 2 && (
                 <div
-                    className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 max-h-96 overflow-y-auto rounded-2xl border border-slate-200 bg-white py-2 shadow-lift">
+                    className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 max-h-[min(24rem,70vh)] overflow-y-auto rounded-2xl border border-slate-200 bg-white py-2 shadow-lift">
                     {groups.length === 0 ? (
-                        <p className="px-4 py-3 text-sm text-slate-400">No matches for “{q.trim()}”.</p>
+                        <p className="px-4 py-3 text-sm text-slate-400">
+                            No matches for “{q.trim()}”.
+                        </p>
                     ) : (
                         groups.map((g) => (
                             <div key={g.label} className="py-1">
-                                <p className="px-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">{g.label}</p>
+                                <p className="px-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                    {g.label}
+                                </p>
                                 {g.rows.map((r) => (
                                     <button
                                         key={r.key}
@@ -151,11 +172,17 @@ function GlobalSearch() {
                                         className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-slate-50"
                                     >
                                         <span
-                                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-600">{r.icon}</span>
-                                        <span className="min-w-0">
-                      <span className="block truncate text-sm font-bold text-ink-900">{r.title}</span>
-                      <span className="block truncate text-xs text-slate-400">{r.sub}</span>
-                    </span>
+                                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-600">
+                                            {r.icon}
+                                        </span>
+                                        <span className="min-w-0 flex-1">
+                                            <span className="block truncate text-sm font-bold text-ink-900">
+                                                {r.title}
+                                            </span>
+                                            <span className="block truncate text-xs text-slate-400">
+                                                {r.sub}
+                                            </span>
+                                        </span>
                                     </button>
                                 ))}
                             </div>
@@ -167,19 +194,28 @@ function GlobalSearch() {
     );
 }
 
-export default function DashboardShell({role, navItems, footerExtra, footerNav = [], globalSearch = false, children}) {
+export default function DashboardShell({
+                                           role,
+                                           navItems,
+                                           footerExtra,
+                                           footerNav = [],
+                                           globalSearch = false,
+                                           children,
+                                       }) {
     const {user, logout} = useAuth();
     const {notify} = useToast();
     const location = useLocation();
     const [drawer, setDrawer] = useState(false);
-    const meta = TITLES[role];
+    const meta = TITLES[role] || TITLES.customer;
 
     const NavBody = ({onNavigate}) => (
         <>
             {navItems.map((item) =>
                 item.section ? (
-                    <p key={`sec-${item.section}`}
-                       className="px-3.5 pb-1.5 pt-5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 first:pt-1">
+                    <p
+                        key={`sec-${item.section}`}
+                        className="px-3.5 pb-1.5 pt-5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 first:pt-1"
+                    >
                         {item.section}
                     </p>
                 ) : (
@@ -190,24 +226,42 @@ export default function DashboardShell({role, navItems, footerExtra, footerNav =
                         onClick={onNavigate}
                         className={({isActive}) =>
                             `relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors ${
-                                isActive ? "bg-primary-50 text-primary-700" : "text-slate-500 hover:bg-slate-100 hover:text-ink-800"
+                                isActive
+                                    ? "bg-primary-50 text-primary-700"
+                                    : "text-slate-500 hover:bg-slate-100 hover:text-ink-800"
                             }`
                         }
                     >
                         {({isActive}) => (
                             <>
-                                {isActive && <span className="absolute inset-y-2 left-0 w-1 rounded-r bg-primary-600"
-                                                   aria-hidden="true"/>}
-                                <span className={isActive ? "text-primary-600" : "text-slate-400"}>{item.icon}</span>
-                                {item.label}
+                                {isActive && (
+                                    <span
+                                        className="absolute inset-y-2 left-0 w-1 rounded-r bg-primary-600"
+                                        aria-hidden="true"
+                                    />
+                                )}
+                                <span
+                                    className={
+                                        isActive
+                                            ? "text-primary-600"
+                                            : "text-slate-400"
+                                    }
+                                >
+                                    {item.icon}
+                                </span>
+                                <span className="min-w-0 truncate">
+                                    {item.label}
+                                </span>
                                 {item.count !== undefined && item.count > 0 && (
                                     <span
-                                        className={`ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                                            item.countTone === "amber" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-500"
+                                        className={`ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                                            item.countTone === "amber"
+                                                ? "bg-amber-100 text-amber-700"
+                                                : "bg-slate-100 text-slate-500"
                                         }`}
                                     >
-                    {item.count}
-                  </span>
+                                        {item.count}
+                                    </span>
                                 )}
                             </>
                         )}
@@ -220,13 +274,11 @@ export default function DashboardShell({role, navItems, footerExtra, footerNav =
     const SidebarBody = (
         <>
             <div className="flex items-center justify-between px-5 pb-4 pt-6">
-                <Link to="/"
-                      className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-primary-700">
+                <Link
+                    to="/"
+                    className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-primary-700"
+                >
                     Lumina
-                    {role === "admin" && (
-                        <span
-                            className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-slate-500">Admin</span>
-                    )}
                 </Link>
                 <button
                     type="button"
@@ -237,11 +289,12 @@ export default function DashboardShell({role, navItems, footerExtra, footerNav =
                     <FaXmark size={16}/>
                 </button>
             </div>
+
             <span
                 className={`mx-5 mb-2 inline-block w-fit rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest ${meta.tint}`}
             >
-        {role === "admin" ? "Admin" : meta.label}
-      </span>
+                {meta.label}
+            </span>
 
             {role === "customer" && user && (
                 <div
@@ -250,8 +303,12 @@ export default function DashboardShell({role, navItems, footerExtra, footerNav =
                         className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-xl font-extrabold text-primary-700 ring-4 ring-primary-50">
                         {user.avatarLetter || user.name?.charAt(0)}
                     </div>
-                    <p className="mt-3 truncate text-sm font-bold text-ink-900">{user.name}</p>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{user.memberTier || "Member"}</p>
+                    <p className="mt-3 truncate text-sm font-bold text-ink-900">
+                        {user.name}
+                    </p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        {user.memberTier || "Member"}
+                    </p>
                 </div>
             )}
 
@@ -265,22 +322,22 @@ export default function DashboardShell({role, navItems, footerExtra, footerNav =
                         key={f.to}
                         to={f.to}
                         onClick={() => setDrawer(false)}
-                        className={({isActive}) =>
-                            `mb-3 flex items-center gap-2.5 text-sm font-semibold transition-colors ${
-                                isActive ? "text-primary-700" : "text-slate-500 hover:text-primary-700"
-                            }`
-                        }
+                        className="mb-3 flex items-center gap-2.5 text-sm font-semibold text-slate-500 transition-colors hover:text-primary-700"
                     >
                         {f.icon} {f.label}
                     </Link>
                 ))}
+
                 {role !== "customer" && (
-                    <Link to="/"
-                          className="mb-3 flex items-center gap-2.5 text-sm font-semibold text-slate-500 hover:text-primary-700"
-                          onClick={() => setDrawer(false)}>
+                    <Link
+                        to="/"
+                        className="mb-3 flex items-center gap-2.5 text-sm font-semibold text-slate-500 hover:text-primary-700"
+                        onClick={() => setDrawer(false)}
+                    >
                         <FaStore size={13}/> View storefront
                     </Link>
                 )}
+
                 <button
                     type="button"
                     onClick={() => {
@@ -292,6 +349,7 @@ export default function DashboardShell({role, navItems, footerExtra, footerNav =
                 >
                     <FaArrowRightFromBracket size={13}/> Logout
                 </button>
+
                 {footerExtra}
             </div>
         </>
@@ -301,54 +359,100 @@ export default function DashboardShell({role, navItems, footerExtra, footerNav =
         <div className="min-h-screen lg:flex">
             {/* Desktop sidebar */}
             <aside
-                className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex">{SidebarBody}</aside>
+                className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex">
+                {SidebarBody}
+            </aside>
 
             {/* Mobile drawer */}
             {drawer && (
-                <div className="fixed inset-0 z-[70] lg:hidden" role="dialog" aria-modal="true">
-                    <div className="absolute inset-0 bg-ink-900/50" onClick={() => setDrawer(false)}
-                         aria-hidden="true"/>
-                    <aside
-                        className="absolute inset-y-0 left-0 flex w-72 flex-col bg-white shadow-2xl">{SidebarBody}</aside>
+                <div
+                    className="fixed inset-0 z-[70] lg:hidden"
+                    role="dialog"
+                    aria-modal="true"
+                >
+                    <div
+                        className="absolute inset-0 bg-ink-900/50"
+                        onClick={() => setDrawer(false)}
+                        aria-hidden="true"
+                    />
+                    <aside className="absolute inset-y-0 left-0 flex w-[min(18rem,85vw)] flex-col bg-white shadow-2xl">
+                        {SidebarBody}
+                    </aside>
                 </div>
             )}
 
-            <div className="min-w-0 flex-1">
-                <header
-                    className="sticky top-0 z-40 flex min-h-14 flex-wrap items-center gap-3 border-b border-slate-200 bg-white/95 px-4 py-2 backdrop-blur sm:px-6">
-                    <button type="button" className="rounded-lg p-2 text-ink-800 hover:bg-slate-100 lg:hidden"
-                            onClick={() => setDrawer(true)} aria-label="Open sidebar">
-                        <FaBars size={16}/>
-                    </button>
-                    <Link to="/" className="text-lg font-extrabold tracking-tight text-primary-700 lg:hidden">
-                        Lumina
-                    </Link>
+            {/* Main Column */}
+            <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+                <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+                    {/* Top Row: Hamburger & Logo (Left) + Notifications & User Avatar (Far Right) */}
+                    <div className="flex min-h-14 items-center gap-2 px-3 py-2 sm:gap-3 sm:px-6">
+                        <button
+                            type="button"
+                            className="shrink-0 rounded-lg p-2 text-ink-800 hover:bg-slate-100 lg:hidden"
+                            onClick={() => setDrawer(true)}
+                            aria-label="Open sidebar"
+                        >
+                            <FaBars size={16}/>
+                        </button>
+
+                        <Link
+                            to="/"
+                            className="shrink-0 text-lg font-extrabold tracking-tight text-primary-700 lg:hidden"
+                        >
+                            Lumina
+                        </Link>
+
+                        {/* Desktop Search (Hidden on Mobile) */}
+                        {globalSearch && (
+                            <div className="ml-4 hidden min-w-0 flex-1 lg:block lg:max-w-sm">
+                                <GlobalSearch/>
+                            </div>
+                        )}
+
+                        {/* Right side items: ALWAYS pushed to far right using ml-auto */}
+                        <div className="ml-auto flex shrink-0 items-center gap-2">
+                            <div className="relative shrink-0">
+                                <NotificationsBell/>
+                            </div>
+
+                            {user && (
+                                <div
+                                    className="flex max-w-[9.5rem] items-center gap-2 rounded-xl border border-slate-200 bg-white py-1 pl-1 pr-2 sm:max-w-none sm:gap-2.5 sm:pr-3.5">
+                                    <span
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-xs font-bold text-white">
+                                        {user.avatarLetter || user.name?.charAt(0)}
+                                    </span>
+                                    <span className="hidden min-w-0 text-left sm:block">
+                                        <span
+                                            className="block truncate text-sm font-semibold leading-tight text-ink-900">
+                                            {user.name}
+                                        </span>
+                                        <span
+                                            className="block text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                            {role === "admin"
+                                                ? "Platform Manager"
+                                                : role === "seller"
+                                                    ? "Seller Account"
+                                                    : "Member"}
+                                        </span>
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Mobile Search Row (Full width below the top icons) */}
                     {globalSearch && (
-                        <div className="order-last w-full lg:order-none lg:ml-auto lg:w-auto lg:max-w-sm">
+                        <div className="border-t border-slate-100 px-3 py-2 sm:px-6 lg:hidden">
                             <GlobalSearch/>
                         </div>
                     )}
-                    <div className={`flex items-center gap-2 ${globalSearch ? "" : "ml-auto"}`}>
-                        <NotificationsBell/>
-                        {user && (
-                            <div
-                                className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white py-1 pl-1 pr-3.5">
-                <span
-                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-xs font-bold text-white">
-                  {user.avatarLetter || user.name?.charAt(0)}
-                </span>
-                                <span className="hidden text-left sm:block">
-                  <span className="block text-sm font-semibold leading-tight text-ink-900">{user.name}</span>
-                  <span className="block text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    {role === "admin" ? "Platform Manager" : role === "seller" ? "Seller Account" : "Member"}
-                  </span>
-                </span>
-                            </div>
-                        )}
-                    </div>
                 </header>
 
-                <main className="mx-auto w-full max-w-[1400px] px-4 py-7 sm:px-6 lg:px-8" key={location.pathname}>
+                <main
+                    className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 sm:px-6 sm:py-7 lg:px-8"
+                    key={location.pathname}
+                >
                     {children !== undefined ? children : <Outlet/>}
                 </main>
             </div>
