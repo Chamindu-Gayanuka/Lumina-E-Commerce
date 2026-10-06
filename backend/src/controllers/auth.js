@@ -138,6 +138,35 @@ you can safely ignore this email.`,
     });
 }
 
+export async function registerSeller(req, res) {
+    const {name, email, password, phone, storeName, businessAddress, description} = req.body;
+
+    if (!name || !email || !password || !storeName || !businessAddress) return res.status(400).json({
+        message: 'Personal and business details are required'
+    });
+
+    if (await User.findOne({email})) return res.status(409).json({
+        message: 'Email already exists'
+    });
+
+    const U = await User.create({
+        name,
+        email,
+        password: await bcrypt.hash(password, 12),
+        phone,
+        storeName,
+        businessAddress,
+        description,
+        role: 'Seller',
+        status: 'Inactive',
+        approvalStatus: 'Pending'
+    });
+    res.status(201).json({
+       applicationId: U._id,
+       status: 'Pending'
+    });
+}
+
 export async function login(req, res) {
     const U = await User.findOne({
         email: req.body.email
@@ -190,4 +219,40 @@ export async function verify(req, res) {
     res.json({
         message: 'Email verified successfully'
     });
+}
+
+export async function forgot(req, res) {
+    const u = await User.findOne({
+        email: req.body.email
+    });
+
+    if (u) {
+        u.resetToken = randomToken();
+        u.resetExpires = Date.now() + 3600000; // 1 hour
+        await u.save();
+        mail(u.email, 'Reset your Lumina password', 'Reset your password', `<a href="${process.env.CLIENT_URL}/reset-password?token=${u.resetToken}">Reset password</a>`).catch(console.error)
+
+    }
+    res.json({sent: true});
+}
+
+export async function reset(req, res) {
+    const u = await User.findOne({
+        resetToken: req.body.token,
+        resetExpires: {
+            $gt: Date.now()
+        }
+    });
+
+    if (!u) {
+        return res.status(400).json({
+            message: 'Invalid or expired reset token'
+        });
+    }
+
+    u.password = await bcrypt.hash(req.body.password, 12);
+    u.resetToken = undefined;
+    u.resetExpires = undefined;
+    await u.save();
+    res.json({updated: true});
 }
