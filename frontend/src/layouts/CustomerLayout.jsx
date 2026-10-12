@@ -1,5 +1,5 @@
 import React from "react";
-import {FaLocationDot, FaLock, FaReceipt, FaUser, FaCartShopping} from "react-icons/fa6";
+import {FaCartShopping, FaLocationDot, FaLock, FaReceipt, FaUser} from "react-icons/fa6";
 import DashboardShell from "./DashboardShell";
 
 const nav = [

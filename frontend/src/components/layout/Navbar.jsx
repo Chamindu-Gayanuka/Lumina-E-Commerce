@@ -353,7 +353,8 @@ export default function Navbar() {
                         Cart
 
                         {cart.count > 0 ? (
-                            <span className="ml-auto rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                            <span
+                                className="ml-auto rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white">
                                 {cart.count}{" "}
                                 {cart.count === 1 ? "item" : "items"}
                             </span>
@@ -380,7 +381,8 @@ export default function Navbar() {
                                 onClick={closeMenu}
                                 className="flex items-center gap-2.5 rounded-xl px-2 py-2.5 text-sm font-semibold text-ink-800 hover:bg-slate-50"
                             >
-                                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-primary-600">
+                                <span
+                                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-primary-600">
                                     <CategoryIcon
                                         iconKey={c.iconKey}
                                         size={14}
@@ -401,7 +403,8 @@ export default function Navbar() {
                             onClick={closeMenu}
                             className="flex items-center gap-2.5 rounded-xl px-2 py-2.5 text-sm font-bold text-primary-700 hover:bg-primary-50"
                         >
-                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-100 text-primary-700">
+                            <span
+                                className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-100 text-primary-700">
                                 <FaStore size={13}/>
                             </span>
 

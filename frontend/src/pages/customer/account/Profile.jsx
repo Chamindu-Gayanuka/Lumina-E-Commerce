@@ -9,6 +9,7 @@ import {deleteAvatar, updateProfile} from "../../../services/accountService";
 import {useAuth} from "../../../context/AuthContext";
 import {useToast} from "../../../context/ToastContext";
 import {formatDate} from "../../../utils/format";
+import {resendVerification} from "../../../services/authService";
 
 export default function Profile() {
     const {user, updateUser} = useAuth();
@@ -29,6 +30,7 @@ export default function Profile() {
     const [errors, setErrors] = useState({});
     const [saving, setSaving] = useState(false);
     const [deletingAvatar, setDeletingAvatar] = useState(false);
+    const [resendingVerification, setResendingVerification] = useState(false);
 
     useEffect(() => {
         if (!user) return;
@@ -84,6 +86,18 @@ export default function Profile() {
 
         const previewUrl = URL.createObjectURL(file);
         setAvatarPreview(previewUrl);
+    };
+
+    const handleResendVerification = async () => {
+        setResendingVerification(true);
+        try {
+            await resendVerification();
+            notify('Verification email sent.');
+        } catch (err) {
+            notify(err.message || 'Unable to send verification email.', 'error');
+        } finally {
+            setResendingVerification(false);
+        }
     };
 
     const handleDeleteAvatar = async () => {
@@ -265,7 +279,7 @@ export default function Profile() {
                     </div>
 
                     <Input
-                        className="mt-5 max-w-md"
+                        wrapperClassName="mt-5 max-w-md"
                         label="Email Address"
                         name="profile-email"
                         icon={FaEnvelope}
@@ -273,6 +287,15 @@ export default function Profile() {
                         readOnly
                         hint="Email changes require backend verification."
                     />
+
+                    {!user.emailVerified && (
+                        <div
+                            className="mt-4 flex max-w-md items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm">
+                            <span className="text-amber-800">Your email is not verified.</span>
+                            <Button size="sm" loading={resendingVerification} onClick={handleResendVerification}>Resend
+                                email</Button>
+                        </div>
+                    )}
 
                     {errors.submit && (
                         <p className="mt-4 text-sm text-red-500">

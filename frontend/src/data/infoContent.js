@@ -313,6 +313,48 @@ export const INFO_PAGES = {
         ],
     },
 
+    "terms-and-conditions": {
+        title: "Terms & Conditions",
+        intro: "These terms explain the rules for using the Lumina marketplace as a customer, seller or administrator.",
+        updated: "Last updated: 12 October 2026",
+        blocks: [
+            {
+                type: "paragraphs", title: "1 · Using Lumina", text: [
+                    "By creating an account or using Lumina, you agree to use the marketplace lawfully and provide accurate information.",
+                    "You are responsible for keeping your account credentials secure and for activity performed through your account."
+                ]
+            },
+            {
+                type: "paragraphs", title: "2 · Orders and payments", text: [
+                    "Customers are responsible for reviewing their delivery information and order summary before placing an order.",
+                    "Lumina currently supports Cash on Delivery. An order becomes binding after the platform confirms it, subject to stock availability and seller fulfilment."
+                ]
+            },
+            {
+                type: "paragraphs", title: "3 · Products and sellers", text: [
+                    "Products are offered by marketplace sellers. Product descriptions, prices, stock and delivery information should be reviewed before purchase.",
+                    "Sellers are responsible for maintaining accurate product information, inventory and fulfilment of accepted orders."
+                ]
+            },
+            {
+                type: "paragraphs", title: "4 · Cancellations and returns", text: [
+                    "Customers may cancel an order while cancellation is available in the account area. Return and refund eligibility depends on the applicable product and marketplace policy.",
+                    "Lumina may cancel or restrict transactions where fraud, abuse, unavailable stock or policy violations are detected."
+                ]
+            },
+            {
+                type: "paragraphs", title: "5 · Accounts and suspension", text: [
+                    "Lumina may suspend or terminate accounts that misuse the service, provide false information, abuse promotions or violate these terms.",
+                    "You may request account support through the customer-service channel."
+                ]
+            },
+            {
+                type: "callout",
+                text: "Please review these terms before registering. Production legal terms should be reviewed by the business owner and updated for the applicable jurisdiction before launch."
+            }
+        ]
+    },
+
     "privacy-policy": {
         title: "Privacy Policy",
         intro:

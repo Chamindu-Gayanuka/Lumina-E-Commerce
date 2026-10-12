@@ -1,21 +1,10 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import {Link, NavLink, Outlet, useLocation, useNavigate} from "react-router-dom";
-import {
-    FaArrowRightFromBracket,
-    FaBars,
-    FaBoxOpen,
-    FaMagnifyingGlass,
-    FaStore,
-    FaTruckFast,
-    FaUser,
-    FaXmark,
-} from "react-icons/fa6";
+import {FaArrowRightFromBracket, FaBars, FaMagnifyingGlass, FaStore, FaXmark,} from "react-icons/fa6";
 
 import {useAuth} from "../context/AuthContext";
 import {useToast} from "../context/ToastContext";
-import store from "../data/store";
 import NotificationsBell from "../components/common/NotificationsBell";
-import {formatPrice} from "../utils/format";
 
 const TITLES = {
     admin: {
@@ -63,6 +52,10 @@ function GlobalSearch() {
 
     const groups = useMemo(() => {
         const term = q.trim().toLowerCase();
+        // Search results are loaded by dedicated admin pages; keep the shell free of mock data.
+        if (term.length < 2) return [];
+        return []; /* backend search can be added without a client-side data store */
+        /*
 
         if (term.length < 2) {
             return [];
@@ -164,7 +157,7 @@ function GlobalSearch() {
             },
         ].filter(
             (g) => g.rows.length
-        );
+        );*/
     }, [q]);
 
 

@@ -4,6 +4,7 @@ import {allow, auth} from "../middleware/auth.js";
 import * as me from "../controllers/account.js";
 import * as c from "../controllers/catelog.js";
 import * as o from "../controllers/orders.js";
+import * as admin from "../controllers/admin.js";
 import {uploadAvatar} from "../middleware/upload.js";
 
 const r = Router();
@@ -22,6 +23,7 @@ r.post('/auth/forgot-password', a.forgot);
 r.post('/auth/reset-password', a.reset);
 
 r.get('/auth/me', auth, me.me);
+r.post('/auth/resend-verification', auth, a.resendVerification);
 
 r.patch(
     "/account/profile",
@@ -43,7 +45,6 @@ r.delete('/account/addresses/:addressId', auth, me.removeAddress);
 r.post('/account/change-password', auth, me.changePassword);
 
 r.get('/categories', c.categories);
-
 r.get('/products', c.products);
 r.get('/products/:id', c.product);
 
@@ -54,5 +55,20 @@ r.get('/seller/orders', auth, allow('Seller'), o.sellerOrders);
 r.patch('/orders/:id/cancel', auth, allow('Customer'), o.cancel);
 r.patch('/orders/:id/status', auth, allow('Seller', 'Administrator'), o.status);
 r.get('/admin/orders', auth, allow('Administrator'), o.all);
+
+r.get('/users', auth, allow('Administrator'), admin.users);
+r.get('/users/:id', auth, allow('Administrator'), admin.user);
+r.patch('/users/:id/status', auth, allow('Administrator'), admin.userStatus);
+r.get('/sellers', auth, allow('Administrator'), admin.sellers);
+r.get('/sellers/:id', auth, allow('Administrator'), admin.seller);
+r.patch('/sellers/:id/review', auth, allow('Administrator'), admin.reviewSeller);
+r.get('/admin/products', auth, allow('Administrator'), admin.allProducts);
+r.get('/inventory', auth, allow('Seller', 'Administrator'), admin.inventory);
+r.patch('/inventory/:id', auth, allow('Seller', 'Administrator'), admin.updateInventory);
+r.get('/admin/stats', auth, allow('Administrator'), admin.stats);
+r.get('/seller/stats', auth, allow('Seller'), admin.sellerStats);
+r.get('/admin/categories', auth, allow('Administrator'), admin.categories);
+r.patch('/categories/:id', auth, allow('Administrator'), admin.updateCategory);
+r.delete('/categories/:id', auth, allow('Administrator'), admin.deleteCategory);
 
 export default r;

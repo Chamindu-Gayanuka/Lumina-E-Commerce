@@ -71,18 +71,8 @@ export default function Home() {
                                 Shop Now
                             </Button>
                         </div>
-                        <dl className="mt-10 flex gap-8">
-                            {[
-                                ["148+", "Premium products"],
-                                ["2.4k+", "Happy customers"],
-                                ["4.8★", "Average rating"],
-                            ].map(([v, l]) => (
-                                <div key={l}>
-                                    <dt className="text-xl font-extrabold text-ink-900">{v}</dt>
-                                    <dd className="text-xs font-medium uppercase tracking-wide text-slate-400">{l}</dd>
-                                </div>
-                            ))}
-                        </dl>
+                        <p className="mt-10 text-sm font-semibold text-primary-700">Explore products from Lumina
+                            sellers</p>
                     </div>
                     <div className="relative">
                         <div className="overflow-hidden rounded-3xl shadow-lift ring-1 ring-slate-900/5">

@@ -15,8 +15,12 @@ export default function ProductCard({product, priority = false}) {
 
     const productId = product._id;
 
-    const info = cart.stockInfo(productId);
-    const out = info.stock === 0;
+    const info = {
+        ...cart.stockInfo(productId),
+        stock: product.stock,
+        remaining: Math.max(0, product.stock - (cart.items.find(x => x.product._id === productId)?.qty || 0))
+    };
+    const out = product.stock === 0;
     const maxed = !out && info.remaining <= 0;
     const low = !out && info.stock <= (product.lowStockLevel ?? 5);
 
@@ -106,13 +110,15 @@ export default function ProductCard({product, priority = false}) {
                     disabled={out || maxed}
                     onClick={() =>
                         gate(() => {
-                            const res = cart.add(productId, 1);
+                            const res = cart.add(productId, 1, product);
 
-                            if (res.added > 0) {
+                            if (res.requiresLogin) {
+                                notify("Please sign in to add items to your cart.", "info");
+                            } else if (res.added > 0) {
                                 notify(
                                     res.capped
                                         ? `Only ${res.stock} in stock - ${res.inCart} now in your cart`
-                                        : `${product.name} added to cart`,
+                                        : `You have successfully added ${res.added} ${res.added === 1 ? "item" : "items"} to your cart.`,
                                     res.capped ? "info" : "success"
                                 );
                             } else if (res.soldOut) {
@@ -122,7 +128,7 @@ export default function ProductCard({product, priority = false}) {
                                 );
                             } else {
                                 notify(
-                                    `All ${res.stock} available are already in your cart`,
+                                    `You already have ${res.inCart} × ${product.name} in your cart`,
                                     "info"
                                 );
                             }

@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import User from "../models/User.js";
-import {randomToken, sign, publicUser} from "../utils/tokens.js";
+import {publicUser, randomToken, sign} from "../utils/tokens.js";
 import {mail} from "../utils/mailer.js";
 
 export async function register(req, res) {
@@ -162,8 +162,8 @@ export async function registerSeller(req, res) {
         approvalStatus: 'Pending'
     });
     res.status(201).json({
-       applicationId: U._id,
-       status: 'Pending'
+        applicationId: U._id,
+        status: 'Pending'
     });
 }
 
@@ -219,6 +219,18 @@ export async function verify(req, res) {
     res.json({
         message: 'Email verified successfully'
     });
+}
+
+export async function resendVerification(req, res) {
+    const u = await User.findById(req.user.sub);
+    if (!u) return res.status(404).json({message: 'User not found'});
+    if (u.emailVerified) return res.status(400).json({message: 'Email is already verified'});
+    u.verifyToken = randomToken();
+    u.verifyExpires = Date.now() + 86400000;
+    await u.save();
+    const verifyUrl = `${process.env.CLIENT_URL}/verify-email?token=${u.verifyToken}`;
+    await mail(u.email, 'Confirm your Lumina email', 'Confirm your email', `<p>Hi ${u.name},</p><p>Please confirm your email address:</p><p><a href="${verifyUrl}">Confirm your email</a></p>`);
+    res.json({sent: true, message: 'Verification email sent'});
 }
 
 export async function forgot(req, res) {

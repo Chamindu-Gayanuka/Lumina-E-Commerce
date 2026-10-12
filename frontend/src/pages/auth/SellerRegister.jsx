@@ -5,7 +5,7 @@ import {AuthShell} from "../../layouts/AuthShell";
 import Button from "../../components/ui/Button";
 import Input, {Checkbox, PasswordInput, Textarea} from "../../components/ui/Input";
 import {ValidationSummary} from "../../components/ui/States";
-import {required, isEmail, isPhone, minLength, matches, validate, hasErrors} from "../../utils/validation";
+import {hasErrors, isEmail, isPhone, matches, minLength, required, validate} from "../../utils/validation";
 import {registerSeller} from "../../services/authService";
 
 function SectionHead({icon, tone, title, sub}) {

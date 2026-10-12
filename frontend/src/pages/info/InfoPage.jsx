@@ -1,6 +1,6 @@
 import React from "react";
 import {Link} from "react-router-dom";
-import {FaClock, FaEnvelope, FaPhone, FaLocationDot, FaChevronDown} from "react-icons/fa6";
+import {FaChevronDown, FaClock, FaEnvelope, FaLocationDot, FaPhone} from "react-icons/fa6";
 import Breadcrumbs from "../../components/ui/Breadcrumbs";
 import Button from "../../components/ui/Button";
 import Badge from "../../components/ui/Badge";

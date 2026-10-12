@@ -6,14 +6,14 @@ import Button from "../../components/ui/Button";
 import Input, {Checkbox, PasswordInput} from "../../components/ui/Input";
 import {ValidationSummary} from "../../components/ui/States";
 import {
-    required,
+    hasErrors,
     isEmail,
     isPhone,
-    minLength,
     matches,
+    minLength,
     passwordRules,
-    validate,
-    hasErrors
+    required,
+    validate
 } from "../../utils/validation";
 import {useAuth} from "../../context/AuthContext";
 import {useToast} from "../../context/ToastContext";
@@ -94,9 +94,9 @@ export default function Register() {
                         label={
                             <span className="text-sm leading-relaxed text-slate-500">
                 I agree to the{" "}
-                                <Link to="/"
+                                <Link to="/terms-and-conditions"
                                       className="font-semibold text-primary-700 hover:underline">Terms &amp; Conditions</Link> and{" "}
-                                <Link to="/"
+                                <Link to="/privacy-policy"
                                       className="font-semibold text-primary-700 hover:underline">Privacy Policy</Link>
               </span>
                         }

@@ -18,7 +18,10 @@ export async function products(req, res) {
     } = req.query;
     const q = {status: status || 'Active'};
     if (category) q.category = category;
-    if (sellerId) q.sellerId = sellerId;
+    if (req.query.categories) q.category = {$in: Array.isArray(req.query.categories) ? req.query.categories : String(req.query.categories).split(',')};
+    if (sellerId && mongoose.Types.ObjectId.isValid(sellerId)) q.sellerId = sellerId;
+    if (req.query.featured === 'true') q.featured = true;
+    if (req.query.popular === 'true') q.popular = true;
     if (search) q.$or = [{name: {$regex: search, $options: 'i'}}, {description: {$regex: search, $options: 'i'}}];
     if (min || max) q.price = {...(min && {$gte: +min}), ...(max && {$lte: +max})};
     if (availability === 'in') q.stock = {$gt: 0};
@@ -27,7 +30,7 @@ export async function products(req, res) {
     const total = await Product.countDocuments(q), pages = Math.max(1, Math.ceil(total / +perPage)),
         p = Math.min(Math.max(1, +page), pages);
     res.json({
-        items: await Product.find(q).sort(sortQ).skip((p - 1) * +perPage).limit(+perPage),
+        items: await Product.find(q).populate('sellerId', 'name storeName avatar').sort(sortQ).skip((p - 1) * +perPage).limit(+perPage),
         total,
         page: p,
         pages,
@@ -51,7 +54,7 @@ export const product = async (req, res) => {
             });
         }
 
-        const p = await Product.findById(id);
+        const p = await Product.findById(id).populate('sellerId', 'name storeName avatar');
 
         if (!p) {
             return res.status(404).json({

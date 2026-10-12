@@ -48,6 +48,11 @@ export async function registerSeller(data) {
     }
 }
 
+export async function resendVerification() {
+    const response = await api.post('/auth/resend-verification');
+    return response.data;
+}
+
 export async function requestPasswordReset(email) {
     try {
         const response = await api.post("/auth/forgot-password", {

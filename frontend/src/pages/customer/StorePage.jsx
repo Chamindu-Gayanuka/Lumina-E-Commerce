@@ -52,9 +52,11 @@ export default function StorePage() {
                     return;
                 }
 
-                setSeller(store);
+                const sellerRecord = store.seller || store;
+                setSeller(sellerRecord);
 
-                const storeProducts = await getSellerProducts(store.id);
+                const sellerId = sellerRecord._id || sellerRecord.id || storeId;
+                const storeProducts = store.products || await getSellerProducts(sellerId);
                 if (alive) {
                     setProducts(storeProducts || []);
                 }
