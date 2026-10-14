@@ -4,16 +4,16 @@ import mongoose from 'mongoose';
 
 export async function create(req, res) {
     const customer = await (await import('../models/User.js')).default.findById(req.user.sub).select('emailVerified');
-    if (!customer?.emailVerified) return res.status(403).json({message:'Please verify your email before placing an order'});
+    if (!customer?.emailVerified) return res.status(403).json({message: 'Please verify your email before placing an order'});
     const {items = [], deliveryAddress = req.body.address, deliveryFee = 0, paymentMethod = 'COD'} = req.body;
-    if (!Array.isArray(items) || !items.length) return res.status(400).json({message:'Order must contain at least one item'});
+    if (!Array.isArray(items) || !items.length) return res.status(400).json({message: 'Order must contain at least one item'});
     const normalized = items.map(i => ({...i, qty: Number(i.qty ?? i.quantity ?? 0)}));
     const ps = await Product.find({_id: {$in: normalized.map(i => i.productId)}, status: 'Active'});
     const m = new Map(ps.map(p => [p._id.toString(), p]));
     for (const i of normalized) {
         const p = m.get(String(i.productId));
         if (!p) return res.status(409).json({message: `Product ${i.productId} is unavailable`});
-        if (!Number.isInteger(i.qty) || i.qty < 1) return res.status(400).json({message:'Each item quantity must be a positive integer'});
+        if (!Number.isInteger(i.qty) || i.qty < 1) return res.status(400).json({message: 'Each item quantity must be a positive integer'});
         if (p.stock < i.qty) return res.status(409).json({message: `Only ${p.stock} item(s) remain for ${p.name}`});
     }
     const lines = normalized.map(i => {
@@ -34,18 +34,29 @@ export async function create(req, res) {
 
 export const mine = async (req, res) => res.json(await Order.find({customerId: req.user.sub}).sort({createdAt: -1}));
 export const sellerOrders = async (req, res) => {
-    const orders = await Order.find({'items.sellerId': req.user.sub}).sort({createdAt: -1});
+    const sellerId = new mongoose.Types.ObjectId(req.user.sub);
+    const orders = await Order.find({'items.sellerId': sellerId}).sort({createdAt: -1});
     res.json(orders)
 };
 export const one = async (req, res) => {
     const {id} = req.params;
-    if (!id || !mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({message:'Valid order ID is required'});
-    const filter = req.user.role === 'Administrator' ? {_id:id} : {_id:id, customerId:req.user.sub};
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({message: 'Valid order ID is required'});
+    const filter = req.user.role === 'Administrator' ? {_id: id} : req.user.role === 'Seller' ? {
+        _id: id,
+        'items.sellerId': new mongoose.Types.ObjectId(req.user.sub)
+    } : {_id: id, customerId: req.user.sub};
     const o = await Order.findOne(filter);
-    o ? res.json(o) : res.status(404).json({message:'Order not found'});
+    o ? res.json(o) : res.status(404).json({message: 'Order not found'});
 };
 export const all = async (req, res) => res.json(await Order.find().sort({createdAt: -1}));
-export const status = async (req, res) => res.json(await Order.findByIdAndUpdate(req.params.id, {status: req.body.status}, {new: true}));
+export const status = async (req, res) => {
+    const filter = req.user.role === 'Seller' ? {
+        _id: req.params.id,
+        'items.sellerId': new mongoose.Types.ObjectId(req.user.sub)
+    } : {_id: req.params.id};
+    const order = await Order.findOneAndUpdate(filter, {status: req.body.status}, {new: true});
+    order ? res.json(order) : res.status(404).json({message: 'Order not found'});
+};
 
 export async function cancel(req, res) {
     const o = await Order.findOne({_id: req.params.id, customerId: req.user.sub});
