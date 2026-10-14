@@ -17,6 +17,7 @@ const schema = new mongoose.Schema({
         },
         image: String,
         images: [String],
+        imagePublicId: String,
         stock: {
             type: Number,
             default: 0,

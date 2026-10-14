@@ -77,7 +77,14 @@ export default function MyOrders() {
     const reorder = (order) => {
         let n = 0;
         order.items.forEach((it) => {
-            cart.add(it.productId, it.qty);
+            cart.add(it.productId, it.qty, {
+                _id: it.productId,
+                name: it.name,
+                price: it.price,
+                image: it.image,
+                stock: it.qty,
+                status: 'Active'
+            });
             n += 1;
         });
         notify(`${n} ${n === 1 ? "item" : "items"} added back to your cart`);
