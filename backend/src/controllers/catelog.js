@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import Product from '../models/Product.js';
 import Category from '../models/Category.js';
 import Review from '../models/Review.js';
+import {uploadToCloudinary} from '../utils/cloudinary.js';
+import cloudinary from '../config/cloudinary.js';
 
 export async function products(req, res) {
     const {
@@ -16,7 +18,7 @@ export async function products(req, res) {
         sellerId,
         status
     } = req.query;
-    const q = {status: status || 'Active'};
+    const q = status ? {status} : (String(req.query.includeAll) === 'true' ? {} : {status: 'Active'});
     if (category) q.category = category;
     if (req.query.categories) q.category = {$in: Array.isArray(req.query.categories) ? req.query.categories : String(req.query.categories).split(',')};
     if (sellerId && mongoose.Types.ObjectId.isValid(sellerId)) q.sellerId = sellerId;
@@ -72,13 +74,36 @@ export const product = async (req, res) => {
         });
     }
 };
-export const create = async (req, res) => res.status(201).json(await Product.create({
-    ...req.body,
-    sellerId: req.user.sub
-}));
-export const update = async (req, res) => res.json(await Product.findOneAndUpdate({_id: req.params.id, ...(req.user.role === 'Seller' ? {sellerId: req.user.sub} : {})}, req.body, {new: true}));
+export const create = async (req, res) => {
+    const data = {...req.body, sellerId: req.user.sub};
+    if (req.file) {
+        const uploaded = await uploadToCloudinary(req.file.buffer, 'lumina/products');
+        data.image = uploaded.secure_url;
+        data.images = [uploaded.secure_url];
+        data.imagePublicId = uploaded.public_id;
+    }
+    if (data.price !== undefined) data.price = Number(data.price);
+    if (data.stock !== undefined) data.stock = Number(data.stock);
+    res.status(201).json(await Product.create(data));
+};
+export const update = async (req, res) => {
+    const filter = {_id: req.params.id, ...(req.user.role === 'Seller' ? {sellerId: req.user.sub} : {})};
+    const data = {...req.body};
+    if (req.file) {
+        const old = await Product.findOne(filter);
+        const uploaded = await uploadToCloudinary(req.file.buffer, 'lumina/products');
+        data.image = uploaded.secure_url;
+        data.images = [uploaded.secure_url];
+        data.imagePublicId = uploaded.public_id;
+        if (old?.imagePublicId) cloudinary.uploader.destroy(old.imagePublicId).catch(console.error);
+    }
+    if (data.price !== undefined) data.price = Number(data.price);
+    if (data.stock !== undefined) data.stock = Number(data.stock);
+    res.json(await Product.findOneAndUpdate(filter, data, {new: true}));
+};
 export const remove = async (req, res) => {
-    await Product.findByIdAndDelete(req.params.id);
+    const p = await Product.findByIdAndDelete(req.params.id);
+    if (p?.imagePublicId) cloudinary.uploader.destroy(p.imagePublicId).catch(console.error);
     res.status(204).end()
 };
 export const categories = async (req, res) => res.json(await Category.find({status: 'Active'}));

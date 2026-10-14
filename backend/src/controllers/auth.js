@@ -159,11 +159,23 @@ export async function registerSeller(req, res) {
         description,
         role: 'Seller',
         status: 'Inactive',
-        approvalStatus: 'Pending'
+        approvalStatus: 'Pending',
+        emailVerified: false,
+        verifyToken: randomToken(),
+        verifyExpires: Date.now() + 86400000
     });
+    mail(
+        email,
+        'Lumina seller application received',
+        'Application received',
+        `<p>Hi <strong>${name}</strong>,</p><p>Thank you for registering as a seller with Lumina. Your application is currently <strong>Pending</strong>.</p><p>Our team will review your store details and notify you by email once a decision has been made.</p>`,
+        `Hi ${name},\n\nThank you for registering as a seller with Lumina. Your application is currently Pending.\n\nOur team will review your store details and notify you by email once a decision has been made.`
+    ).catch(console.error);
+
     res.status(201).json({
         applicationId: U._id,
-        status: 'Pending'
+        status: 'Pending',
+        message: 'Your seller application was received. We will notify you once it has been reviewed.'
     });
 }
 
@@ -229,7 +241,7 @@ export async function resendVerification(req, res) {
     u.verifyExpires = Date.now() + 86400000;
     await u.save();
     const verifyUrl = `${process.env.CLIENT_URL}/verify-email?token=${u.verifyToken}`;
-    await mail(u.email, 'Confirm your Lumina email', 'Confirm your email', `<p>Hi ${u.name},</p><p>Please confirm your email address:</p><p><a href="${verifyUrl}">Confirm your email</a></p>`);
+    await mail(u.email, 'Confirm your Lumina email', 'Confirm your email', `<p style="color:#d4d4d8">Hi <strong style="color:#fafafa">${u.name}</strong>,</p><p style="color:#a1a1aa">Please confirm your email address to activate your Lumina account.</p><p style="margin:28px 0;text-align:center"><a href="${verifyUrl}" style="display:inline-block;padding:13px 24px;background:#1F8482;border:1px solid #2a9997;border-radius:8px;color:#fff;font-size:14px;font-weight:700;text-decoration:none">Confirm Your Email</a></p><p style="font-size:12px;color:#71717a;word-break:break-all">${verifyUrl}</p>`);
     res.json({sent: true, message: 'Verification email sent'});
 }
 
@@ -242,7 +254,7 @@ export async function forgot(req, res) {
         u.resetToken = randomToken();
         u.resetExpires = Date.now() + 3600000; // 1 hour
         await u.save();
-        mail(u.email, 'Reset your Lumina password', 'Reset your password', `<a href="${process.env.CLIENT_URL}/reset-password?token=${u.resetToken}">Reset password</a>`).catch(console.error)
+        mail(u.email, 'Reset your Lumina password', 'Reset your password', `<p style="color:#d4d4d8">Hi <strong style="color:#fafafa">${u.name}</strong>,</p><p style="color:#a1a1aa">We received a request to reset your Lumina password. This link expires in one hour.</p><p style="margin:28px 0;text-align:center"><a href="${process.env.CLIENT_URL}/reset-password?token=${u.resetToken}" style="display:inline-block;padding:13px 24px;background:#1F8482;border:1px solid #2a9997;border-radius:8px;color:#fff;font-size:14px;font-weight:700;text-decoration:none">Reset Your Password</a></p><p style="font-size:12px;color:#71717a;word-break:break-all">${process.env.CLIENT_URL}/reset-password?token=${u.resetToken}</p><p style="font-size:12px;color:#71717a">If you did not request this, you can safely ignore this email.</p>`).catch(console.error)
 
     }
     res.json({sent: true});

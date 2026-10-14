@@ -6,6 +6,7 @@ import * as c from "../controllers/catelog.js";
 import * as o from "../controllers/orders.js";
 import * as admin from "../controllers/admin.js";
 import {uploadAvatar} from "../middleware/upload.js";
+import {uploadProduct} from "../middleware/uploadProduct.js";
 
 const r = Router();
 
@@ -45,8 +46,14 @@ r.delete('/account/addresses/:addressId', auth, me.removeAddress);
 r.post('/account/change-password', auth, me.changePassword);
 
 r.get('/categories', c.categories);
+
 r.get('/products', c.products);
 r.get('/products/:id', c.product);
+r.post('/products', auth, allow('Seller','Administrator'), uploadProduct.single('image'), c.create);
+r.put('/products/:id', auth, allow('Seller','Administrator'), uploadProduct.single('image'), c.update);
+r.delete('/products/:id', auth, allow('Seller','Administrator'), c.remove);
+r.get('/products/:id/reviews', c.reviews);
+r.post('/products/:id/reviews', auth, allow('Customer'), c.addReview);
 
 r.post('/orders', auth, allow('Customer'), o.create);
 r.get('/orders/mine', auth, o.mine);
@@ -59,16 +66,17 @@ r.get('/admin/orders', auth, allow('Administrator'), o.all);
 r.get('/users', auth, allow('Administrator'), admin.users);
 r.get('/users/:id', auth, allow('Administrator'), admin.user);
 r.patch('/users/:id/status', auth, allow('Administrator'), admin.userStatus);
+r.patch('/users/:id', auth, allow('Seller','Administrator'), admin.updateUser);
 r.get('/sellers', auth, allow('Administrator'), admin.sellers);
 r.get('/sellers/:id', auth, allow('Administrator'), admin.seller);
 r.patch('/sellers/:id/review', auth, allow('Administrator'), admin.reviewSeller);
 r.get('/admin/products', auth, allow('Administrator'), admin.allProducts);
-r.get('/inventory', auth, allow('Seller', 'Administrator'), admin.inventory);
-r.patch('/inventory/:id', auth, allow('Seller', 'Administrator'), admin.updateInventory);
+r.get('/inventory', auth, allow('Seller','Administrator'), admin.inventory);
+r.patch('/inventory/:id', auth, allow('Seller','Administrator'), admin.updateInventory);
 r.get('/admin/stats', auth, allow('Administrator'), admin.stats);
 r.get('/seller/stats', auth, allow('Seller'), admin.sellerStats);
 r.get('/admin/categories', auth, allow('Administrator'), admin.categories);
+r.post('/categories', auth, allow('Administrator'), c.createCategory);
 r.patch('/categories/:id', auth, allow('Administrator'), admin.updateCategory);
 r.delete('/categories/:id', auth, allow('Administrator'), admin.deleteCategory);
-
 export default r;

@@ -35,7 +35,9 @@ export async function placeOrder(payload) {
 }
 
 export async function cancelOrder(id, reason) {
-    return normalizeOrder((await api.patch(`/orders/${id}/cancel`, {reason})).data)
+    const result = normalizeOrder((await api.patch(`/orders/${id}/cancel`, {reason})).data);
+    window.dispatchEvent(new Event('lumina:notifications-refresh'));
+    return result
 }
 
 export async function getAllOrders() {

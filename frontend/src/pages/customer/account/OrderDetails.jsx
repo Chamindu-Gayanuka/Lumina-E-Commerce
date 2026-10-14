@@ -102,7 +102,14 @@ export default function OrderDetails() {
     const canCancel = ["Pending", "Processing"].includes(order.status);
 
     const buyAgain = (item) => {
-        cart.add(item.productId, item.qty);
+        cart.add(item.productId, item.qty, {
+            _id: item.productId,
+            name: item.name,
+            price: item.price,
+            image: item.image,
+            stock: item.qty,
+            status: 'Active'
+        });
         notify(`${item.name} added to cart`);
     };
 
