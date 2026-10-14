@@ -6,7 +6,7 @@ import Button from "../../components/ui/Button";
 import Badge from "../../components/ui/Badge";
 import ProductImage from "../../components/product/ProductImage";
 import {EmptyState} from "../../components/ui/States";
-import {formatPrice, deliveryWindow} from "../../utils/format";
+import {deliveryWindow, formatPrice} from "../../utils/format";
 import {getOrder} from "../../services/orderService";
 import {useToast} from "../../context/ToastContext";
 

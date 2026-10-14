@@ -1,77 +1,51 @@
-import store from "../data/store";
-import api, {isBackendConfigured} from "./api";
+import api from './api';
 
-const delay = (ms = 180) => new Promise((res) => setTimeout(res, ms));
-
-export async function getMyOrders(customerId = "u1") {
-    if (isBackendConfigured) {
-        const {data} = await api.get("/orders/mine");
-        return data;
+const normalizeOrder = o => {
+    if (!o) return o;
+    const a = o.deliveryAddress || {};
+    return {
+        ...o,
+        id: o._id || o.id,
+        orderNumber: o.orderNumber || String(o._id || o.id).slice(-8).toUpperCase(),
+        placedAt: o.placedAt || o.createdAt,
+        address: o.address || {
+            name: a.fullName || a.name,
+            line1: a.address || a.addressLine1,
+            city: a.city,
+            district: a.district,
+            postalCode: a.postalCode,
+            phone: a.phone
+        },
+        payment: o.payment || {method: o.paymentMethod || 'COD', status: o.paymentStatus || 'Pending'},
+        items: (o.items || []).map(i => ({...i, qty: i.qty ?? i.quantity ?? 1}))
     }
-    await delay();
-    return store.getOrdersByCustomer(customerId);
+}
+
+export async function getMyOrders() {
+    return (await api.get('/orders/mine')).data.map(normalizeOrder)
 }
 
 export async function getOrder(id) {
-    await delay(120);
-    return store.getOrderById(id);
+    if (!id) throw new Error('Order ID is required');
+    return normalizeOrder((await api.get(`/orders/${id}`)).data)
 }
 
 export async function placeOrder(payload) {
-    if (isBackendConfigured) {
-        const {data} = await api.post("/orders", payload);
-        return data;
-    }
-    await delay(500); // simulates a network round-trip
-
-    const problems = [];
-    for (const it of payload.items || []) {
-        const p = store.getProductById(it.productId);
-        if (!p || p.status !== "Active") {
-            problems.push(`${it.name || it.productId} is no longer available`);
-        } else if (it.qty > p.stock) {
-            problems.push(`Only ${p.stock} × ${p.name} left in stock (you asked for ${it.qty})`);
-        }
-    }
-    if (problems.length) {
-        const err = new Error(`Stock changed while you were shopping - ${problems.join("; ")}.`);
-        err.code = "STOCK_UNAVAILABLE";
-        throw err;
-    }
-
-    return store.addOrder(payload);
+    return normalizeOrder((await api.post('/orders', payload)).data)
 }
 
 export async function cancelOrder(id, reason) {
-    await delay(250);
-    const res = store.cancelOrder(id, reason);
-    if (res && res.error) {
-        const err = new Error(res.error);
-        err.code = "CANCEL_NOT_ALLOWED";
-        throw err;
-    }
-    return res;
+    return normalizeOrder((await api.patch(`/orders/${id}/cancel`, {reason})).data)
 }
 
 export async function getAllOrders() {
-    if (isBackendConfigured) {
-        const {data} = await api.get("/admin/orders");
-        return data;
-    }
-    await delay();
-    return store.getAllOrders();
+    return (await api.get('/admin/orders')).data.map(normalizeOrder)
 }
 
-export async function getSellerOrders(sellerId) {
-    await delay();
-    return store.getOrdersBySeller(sellerId);
+export async function getSellerOrders() {
+    return (await api.get('/seller/orders')).data.map(normalizeOrder)
 }
 
 export async function updateOrderStatus(id, status) {
-    if (isBackendConfigured) {
-        const {data} = await api.patch(`/orders/${id}/status`, {status});
-        return data;
-    }
-    await delay(200);
-    return store.updateOrderStatus(id, status);
+    return normalizeOrder((await api.patch(`/orders/${id}/status`, {status})).data)
 }

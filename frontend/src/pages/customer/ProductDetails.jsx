@@ -132,7 +132,13 @@ export default function ProductDetails() {
      */
     const productId = product._id;
 
-    const info = cart.stockInfo(productId);
+    const cachedInfo = cart.stockInfo(productId);
+    const info = {
+        ...cachedInfo,
+        stock: Number(product.stock ?? cachedInfo.stock ?? 0),
+        inCart: cachedInfo.inCart,
+        remaining: Math.max(0, Number(product.stock ?? 0) - cachedInfo.inCart)
+    };
 
     const out = product.stock === 0;
 
@@ -248,6 +254,9 @@ export default function ProductDetails() {
                     <h1 className="mt-1.5 text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl">
                         {product.name}
                     </h1>
+                    <p className="mt-2 text-sm text-slate-500">Sold by <strong
+                        className="text-ink-800">{product.sellerId?.storeName || product.sellerName || product.sellerId?.name || 'Lumina seller'}</strong>
+                    </p>
 
                     <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
 
@@ -324,15 +333,18 @@ export default function ProductDetails() {
 
                                 const res = cart.add(
                                     productId,
-                                    effQty
+                                    effQty,
+                                    product
                                 );
 
-                                if (res.added > 0) {
+                                if (res.requiresLogin) {
+                                    notify("Please sign in to add items to your cart.", "info");
+                                } else if (res.added > 0) {
 
                                     notify(
                                         res.capped
                                             ? `Only ${res.stock} in stock - ${res.inCart} now in your cart`
-                                            : `${res.added} × ${product.name} added to cart`,
+                                            : `You have successfully added ${res.added} ${res.added === 1 ? "item" : "items"} to your cart.`,
                                         res.capped
                                             ? "info"
                                             : "success"
@@ -348,7 +360,7 @@ export default function ProductDetails() {
                                 } else {
 
                                     notify(
-                                        `All ${res.stock} available are already in your cart`,
+                                        `You already have ${res.inCart || info.inCart} × ${product.name} in your cart`,
                                         "info"
                                     );
 
@@ -371,7 +383,8 @@ export default function ProductDetails() {
 
                                 cart.add(
                                     productId,
-                                    effQty
+                                    effQty,
+                                    product
                                 );
 
                                 navigate("/checkout");
@@ -385,7 +398,7 @@ export default function ProductDetails() {
                     {maxed && (
                         <p className="mt-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-emerald-600">
                             <FaCircleCheck size={11}/>
-                            You already have all {info.stock} available in your cart
+                            You already have {info.inCart} of {info.stock} available in your cart
                         </p>
                     )}
 
@@ -909,7 +922,7 @@ function ReviewComposer({product, user, onPosted, notify}) {
             alive = false;
         };
 
-    }, [userId, productId]);
+    }, [userId, productId, user]);
 
     if (!user || user.role !== "Customer") {
 

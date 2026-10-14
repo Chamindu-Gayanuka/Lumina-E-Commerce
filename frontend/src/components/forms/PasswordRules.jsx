@@ -1,5 +1,5 @@
 import React from "react";
-import {FaCircleCheck, FaCircle} from "react-icons/fa6";
+import {FaCircle, FaCircleCheck} from "react-icons/fa6";
 import {passwordRules} from "../../utils/validation";
 
 const RULES = [

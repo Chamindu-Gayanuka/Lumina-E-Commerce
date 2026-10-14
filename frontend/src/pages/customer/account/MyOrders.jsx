@@ -1,18 +1,16 @@
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 import useUrlPage from "../../../hooks/useUrlPage";
 import {useNavigate, useSearchParams} from "react-router-dom";
-import {FaInbox, FaWandMagicSparkles} from "react-icons/fa6";
+import {FaInbox} from "react-icons/fa6";
 import Tabs from "../../../components/ui/Tabs";
 import SearchBar from "../../../components/ui/SearchBar";
-import {Select} from "../../../components/ui/Input";
-import Button from "../../../components/ui/Button";
+import {Select, Textarea} from "../../../components/ui/Input";
 import Pagination from "../../../components/ui/Pagination";
 import OrderCard from "../../../components/orders/OrderCard";
 import {EmptyState} from "../../../components/ui/States";
 import {ConfirmDialog} from "../../../components/ui/Modal";
 import {PageSpinner} from "../../../components/ui/Spinner";
-import {Textarea} from "../../../components/ui/Input";
-import {getMyOrders, cancelOrder} from "../../../services/orderService";
+import {cancelOrder, getMyOrders} from "../../../services/orderService";
 import {useAuth} from "../../../context/AuthContext";
 import {useCart} from "../../../context/CartContext";
 import {useToast} from "../../../context/ToastContext";
@@ -68,7 +66,7 @@ export default function MyOrders() {
         }
         if (range !== "all") {
             const cutoff = Date.now() - Number(range) * 86400000;
-            list = list.filter((o) => new Date(o.placedAt).getTime() >= cutoff);
+            list = list.filter((o) => new Date(o.placedAt || o.createdAt).getTime() >= cutoff);
         }
         return list;
     }, [orders, tab, status, search, range]);
@@ -169,10 +167,10 @@ export default function MyOrders() {
                 ) : (
                     visible.map((order) => (
                         <OrderCard
-                            key={order.id}
+                            key={order._id || order.id}
                             order={order}
-                            onDetails={(o) => navigate(`/account/orders/${o.id}`)}
-                            onTrack={(o) => navigate(`/account/orders/${o.id}/track`)}
+                            onDetails={(o) => navigate(`/account/orders/${o._id || o.id}`)}
+                            onTrack={(o) => navigate(`/account/orders/${o._id || o.id}/track`)}
                             onReorder={reorder}
                             onCancel={setCancelTarget}
                         />

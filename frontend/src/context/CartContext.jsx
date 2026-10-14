@@ -1,139 +1,102 @@
-import React, {createContext, useCallback, useContext, useEffect, useMemo, useState} from "react";
-import store from "../data/store";
+import React, {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
+import {useAuth} from './AuthContext';
 
-const STORAGE_KEY = "lumina.cart";
+const KEY = 'lumina.cart.v6', DATA = 'lumina.cart.products.v6', CartContext = createContext(null);
 
-const CartContext = createContext(null);
-
-const DEMO_CART = [
-    {productId: "p1", qty: 1},
-    {productId: "p2", qty: 1},
-    {productId: "p3", qty: 2},
-];
-
-function readStored() {
+function read(k, f) {
     try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw === null) return DEMO_CART;
-        return JSON.parse(raw);
+        return JSON.parse(localStorage.getItem(k)) ?? f
     } catch {
-        return DEMO_CART;
+        return f
     }
 }
 
 export function CartProvider({children}) {
-    const [items, setItems] = useState(readStored);
-
+    const {isAuthenticated, user} = useAuth();
+    const cartKey = `${KEY}.${user?._id || user?.id || 'guest'}`;
+    const [items, setItems] = useState(() => isAuthenticated ? read(cartKey, []) : []);
+    const [products, setProducts] = useState(() => isAuthenticated ? read(`${DATA}.${user?._id || user?.id || 'guest'}`, {}) : {});
     useEffect(() => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    }, [items]);
-
-    const add = useCallback(
-        (productId, qty = 1) => {
-            const product = store.getProductById(productId);
-            const stock = product ? product.stock : 0;
-            const current = items.find((i) => i.productId === productId)?.qty ?? 0;
-            const next = Math.min(current + qty, stock);
-            const applied = Math.max(0, next - current);
-
-            if (applied > 0) {
-                setItems((prev) => {
-                    const existing = prev.find((i) => i.productId === productId);
-                    const base = existing ? existing.qty : 0;
-                    const cappedNext = Math.min(base + qty, stock);
-                    if (cappedNext === base) return prev;
-                    return existing
-                        ? prev.map((i) => (i.productId === productId ? {...i, qty: cappedNext} : i))
-                        : [...prev, {productId, qty: cappedNext}];
-                });
-            }
-
-            return {
-                added: applied,
-                requested: qty,
-                inCart: current + applied,
-                stock,
-                soldOut: stock === 0,
-                capped: applied > 0 && applied < qty,
-                atLimit: applied === 0 && current >= stock,
-            };
-        },
-        [items]
-    );
-
-    /** Live stock vs. what this cart already holds. */
-    const stockInfo = useCallback(
-        (productId) => {
-            const product = store.getProductById(productId);
-            const stock = product ? product.stock : 0;
-            const inCart = items.find((i) => i.productId === productId)?.qty ?? 0;
-            return {
-                stock,
-                inCart,
-                remaining: Math.max(0, stock - inCart),
-                available: stock > 0 && !!product && product.status === "Active"
-            };
-        },
-        [items]
-    );
-
-    const setQty = useCallback((productId, qty) => {
-        setItems((prev) => {
-            const product = store.getProductById(productId);
-            const max = Math.max(1, product?.stock ?? 99);
-            const next = Math.min(Math.max(1, Number(qty) || 1), max);
-            return prev.map((i) => (i.productId === productId ? {...i, qty: next} : i));
-        });
-    }, []);
-
-    const remove = useCallback((productId) => {
-        setItems((prev) => prev.filter((i) => i.productId !== productId));
-    }, []);
-
-    const clear = useCallback(() => setItems([]), []);
-
-    /* Derived view joins live product data so prices/stock never go stale. */
-    const lines = useMemo(() => {
-        return items
-            .map(({productId, qty}) => {
-                const product = store.getProductById(productId);
-                if (!product) return null;
-                return {
-                    product,
-                    qty,
-                    lineTotal: product.price * qty,
-                    stock: product.stock,
-                    exceedsStock: qty > product.stock,
-                };
+        if (!isAuthenticated) {
+            setItems([]);
+            setProducts({});
+            localStorage.removeItem(KEY);
+            localStorage.removeItem(DATA);
+            return
+        }
+        setItems(read(cartKey, []));
+        setProducts(read(`${DATA}.${user?._id || user?.id || 'guest'}`, {}))
+    }, [isAuthenticated, user?._id, user?.id]);
+    useEffect(() => {
+        if (isAuthenticated) {
+            localStorage.setItem(cartKey, JSON.stringify(items));
+            localStorage.setItem(`${DATA}.${user?._id || user?.id || 'guest'}`, JSON.stringify(products))
+        }
+    }, [items, products, isAuthenticated, cartKey, user]);
+    const add = useCallback((id, qty = 1, p) => {
+        if (!isAuthenticated) return {added: 0, requiresLogin: true};
+        if (p) setProducts(x => ({...x, [id]: p}));
+        const stock = Number(p?.stock ?? 0);
+        const previous = items.find(x => x.productId === id)?.qty || 0;
+        const applied = Math.max(0, Math.min(qty, stock - previous));
+        if (applied > 0) {
+            setItems(prev => {
+                const found = prev.some(x => x.productId === id);
+                return found ? prev.map(x => x.productId === id ? {
+                    ...x,
+                    qty: x.qty + applied
+                } : x) : [...prev, {productId: id, qty: applied}]
             })
-            .filter(Boolean);
-    }, [items]);
-
-    const subtotal = lines.reduce((sum, l) => sum + l.lineTotal, 0);
-    const count = lines.reduce((sum, l) => sum + l.qty, 0);
-    const deliveryFee = subtotal === 0 || subtotal >= 5000 ? 0 : 450;
-
-    const value = useMemo(
-        () => ({
-            items: lines,
-            count,
-            subtotal,
-            deliveryFee,
-            total: subtotal + deliveryFee,
-            add,
-            remove,
-            setQty,
-            clear,
-            stockInfo
-        }),
-        [lines, count, subtotal, deliveryFee, add, remove, setQty, clear, stockInfo]
-    );
-
-    return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+        }
+        return {
+            added: applied,
+            requested: qty,
+            inCart: previous + applied,
+            stock,
+            soldOut: stock === 0,
+            capped: applied < qty,
+            atLimit: applied === 0
+        }
+    }, [isAuthenticated, items]);
+    const stockInfo = useCallback(id => {
+        const p = products[id], inCart = items.find(x => x.productId === id)?.qty || 0, stock = Number(p?.stock ?? 0);
+        return {stock, inCart, remaining: Math.max(0, stock - inCart), available: !!p && p.status === 'Active'}
+    }, [products, items]);
+    const setQty = useCallback((id, q) => setItems(a => a.map(x => x.productId === id ? {
+        ...x,
+        qty: Math.max(1, Number(q) || 1)
+    } : x)), []);
+    const remove = useCallback(id => setItems(a => a.filter(x => x.productId !== id)), []);
+    const clear = useCallback(() => setItems([]), []);
+    const lines = useMemo(() => items.map(x => {
+        const p = products[x.productId];
+        return p ? {
+            product: p,
+            qty: x.qty,
+            lineTotal: p.price * x.qty,
+            stock: p.stock,
+            exceedsStock: x.qty > p.stock
+        } : null
+    }).filter(Boolean), [items, products]);
+    const subtotal = lines.reduce((s, x) => s + x.lineTotal, 0),
+        deliveryFee = subtotal === 0 || subtotal >= 5000 ? 0 : 450;
+    return <CartContext.Provider value={{
+        items: lines,
+        count: lines.reduce((s, x) => s + x.qty, 0),
+        subtotal,
+        deliveryFee,
+        total: subtotal + deliveryFee,
+        add,
+        remove,
+        setQty,
+        clear,
+        stockInfo,
+        requiresLogin: !isAuthenticated
+    }}>{children}</CartContext.Provider>
 }
 
 export function useCart() {
-    const ctx = useContext(CartContext);
-    if (!ctx) throw new Error("useCart must be used within <CartProvider>");
-    return ctx;
+    const x = useContext(CartContext);
+    if (!x) throw new Error('useCart must be used within CartProvider');
+    return x
 }

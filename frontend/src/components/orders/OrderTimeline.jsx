@@ -1,12 +1,5 @@
 import React from "react";
-import {
-    FaBoxesPacking,
-    FaCircleCheck,
-    FaGear,
-    FaTruck,
-    FaHouse,
-    FaXmark,
-} from "react-icons/fa6";
+import {FaBoxesPacking, FaCircleCheck, FaGear, FaHouse, FaTruck, FaXmark,} from "react-icons/fa6";
 import {formatDateTime} from "../../utils/format";
 
 const STEP_ICONS = {
@@ -17,11 +10,6 @@ const STEP_ICONS = {
     cancelled: FaXmark,
 };
 
-/**
- * Vertical "Delivery Progress" timeline (tracking wireframe).
- * Steps come from order.timeline: {key,title,note,at,done,cancelled}.
- * Trailing future steps (Shipped → Delivered after cancel) render faded.
- */
 export default function OrderTimeline({order}) {
     const allKeys = ["pending", "processing", "shipped", "delivered"];
     const reached = new Set((order.timeline || []).map((t) => t.key));

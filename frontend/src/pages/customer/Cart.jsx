@@ -47,14 +47,14 @@ export default function Cart() {
                     {cart.items.map(({product, qty, lineTotal, stock}) => {
                         const low = stock <= (product.lowStockLevel ?? 5);
                         return (
-                            <div key={product.id}
+                            <div key={product._id || (product._id || product.id)}
                                  className="lum-card flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
-                                <Link to={`/product/${product.id}`} className="shrink-0">
+                                <Link to={`/product/${(product._id || product.id)}`} className="shrink-0">
                                     <ProductImage product={product} className="h-24 w-24 rounded-xl sm:h-28 sm:w-28"/>
                                 </Link>
 
                                 <div className="min-w-0 flex-1">
-                                    <Link to={`/product/${product.id}`}
+                                    <Link to={`/product/${(product._id || product.id)}`}
                                           className="text-base font-bold text-ink-900 hover:text-primary-700">
                                         {product.name}
                                     </Link>
@@ -85,7 +85,7 @@ export default function Cart() {
                                             value={qty}
                                             min={1}
                                             max={Math.max(1, stock)}
-                                            onChange={(v) => cart.setQty(product.id, v)}
+                                            onChange={(v) => cart.setQty((product._id || product.id), v)}
                                         />
                                     </div>
                                     <div>
@@ -98,7 +98,7 @@ export default function Cart() {
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        cart.remove(product.id);
+                                        cart.remove(product._id || (product._id || product.id));
                                         notify("Item removed from cart", "info");
                                     }}
                                     aria-label={`Remove ${product.name}`}

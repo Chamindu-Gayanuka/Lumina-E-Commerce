@@ -1,13 +1,5 @@
 import React from "react";
-import {
-    FaChartLine,
-    FaGear,
-    FaGaugeHigh,
-    FaBoxOpen,
-    FaBoxesStacked,
-    FaStore,
-    FaTruckFast,
-} from "react-icons/fa6";
+import {FaBoxesStacked, FaBoxOpen, FaChartLine, FaGaugeHigh, FaGear, FaStore, FaTruckFast,} from "react-icons/fa6";
 
 import DashboardShell from "./DashboardShell";
 import Footer from "../components/layout/Footer";

@@ -55,6 +55,13 @@ export function AuthProvider({children}) {
     // Email verification
     const verifyEmail = useCallback(async (token) => {
         const res = await authService.verifyEmail(token);
+        // Keep the current logged-in session in sync after verification.
+        setSession((current) => {
+            if (!current) return current;
+            const next = {...current, user: {...current.user, emailVerified: true}};
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+            return next;
+        });
         return res;
     }, []);
 

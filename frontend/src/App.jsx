@@ -11,7 +11,7 @@ export default function App() {
         <ToastProvider>
             <AuthProvider>
                 <CartProvider>
-                        <AppRoutes/>
+                    <AppRoutes/>
                 </CartProvider>
             </AuthProvider>
         </ToastProvider>

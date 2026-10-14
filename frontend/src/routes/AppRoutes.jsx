@@ -1,5 +1,5 @@
 import React from "react";
-import {Routes, Route, Navigate} from "react-router-dom";
+import {Navigate, Route, Routes} from "react-router-dom";
 
 // Layouts
 import MainLayout from "../layouts/MainLayout";
@@ -82,6 +82,7 @@ export default function AppRoutes() {
                 <Route path={"customer-service"} element={<InfoPage slug="customer-service"/>}/>
                 <Route path={"returns"} element={<InfoPage slug="returns"/>}/>
                 <Route path={"shipping-info"} element={<InfoPage slug="shipping-info"/>}/>
+                <Route path={"terms-and-conditions"} element={<InfoPage slug="terms-and-conditions"/>}/>
                 <Route path={"privacy-policy"} element={<InfoPage slug="privacy-policy"/>}/>
             </Route>
 
@@ -125,21 +126,21 @@ export default function AppRoutes() {
             <Route path="/seller/products/:productId" element={<Navigate to="/seller/products" replace/>}/>
 
             {/* ── Admin console ──────────────────────────────────────────── */}
-            <Route path="/admin" element={<ProtectedRoute roles={["Administrator"]} />}>
-                <Route element={<AdminLayout />}>
-                    <Route index element={<AdminDashboard />} />
-                    <Route path="settings" element={<AdminSettings />} />
-                    <Route path="users" element={<AdminUsers />} />
-                    <Route path="users/:userId" element={<AdminUserDetails />} />
-                    <Route path="sellers" element={<AdminSellers />} />
-                    <Route path="sellers/:sellerId" element={<AdminSellerDetails />} />
-                    <Route path="products" element={<AdminProducts />} />
-                    <Route path="categories" element={<AdminCategories />} />
-                    <Route path="orders" element={<AdminOrders />} />
-                    <Route path="inventory" element={<AdminInventory />} />
-                    <Route path="inventory/low" element={<AdminInventory view="low" />} />
-                    <Route path="inventory/out" element={<AdminInventory view="out" />} />
-                    <Route path="reports/sales" element={<AdminSalesReport />} />
+            <Route path="/admin" element={<ProtectedRoute roles={["Administrator"]}/>}>
+                <Route element={<AdminLayout/>}>
+                    <Route index element={<AdminDashboard/>}/>
+                    <Route path="settings" element={<AdminSettings/>}/>
+                    <Route path="users" element={<AdminUsers/>}/>
+                    <Route path="users/:userId" element={<AdminUserDetails/>}/>
+                    <Route path="sellers" element={<AdminSellers/>}/>
+                    <Route path="sellers/:sellerId" element={<AdminSellerDetails/>}/>
+                    <Route path="products" element={<AdminProducts/>}/>
+                    <Route path="categories" element={<AdminCategories/>}/>
+                    <Route path="orders" element={<AdminOrders/>}/>
+                    <Route path="inventory" element={<AdminInventory/>}/>
+                    <Route path="inventory/low" element={<AdminInventory view="low"/>}/>
+                    <Route path="inventory/out" element={<AdminInventory view="out"/>}/>
+                    <Route path="reports/sales" element={<AdminSalesReport/>}/>
                 </Route>
             </Route>
 

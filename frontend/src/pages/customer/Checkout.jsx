@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Link, Navigate, useNavigate} from "react-router-dom";
 import {FaCircleCheck, FaCreditCard, FaLandmark, FaLocationDot, FaMoneyBill1Wave} from "react-icons/fa6";
 import CheckoutStepper from "../../components/ui/CheckoutStepper";
@@ -8,18 +8,13 @@ import ProductImage from "../../components/product/ProductImage";
 import {EmptyState, ValidationSummary} from "../../components/ui/States";
 import {formatPrice} from "../../utils/format";
 import {DISTRICTS} from "../../utils/constants";
-import {
-    required,
-    isPhone,
-    isPostalCode,
-    validate,
-    hasErrors,
-} from "../../utils/validation";
+import {hasErrors, isPhone, isPostalCode, required, validate,} from "../../utils/validation";
 import {placeOrder} from "../../services/orderService";
 import {useAuth} from "../../context/AuthContext";
 import {useCart} from "../../context/CartContext";
 import {useToast} from "../../context/ToastContext";
 import {PageSpinner} from "../../components/ui/Spinner";
+import {getAddresses} from "../../services/accountService";
 
 /* ── Payment method selector (radio cards) ──────────────────────────────── */
 function PaymentMethodSelector({value, onChange}) {
@@ -122,7 +117,20 @@ export default function Checkout() {
         notes: "",
         save: false,
     });
+    const [savedAddresses, setSavedAddresses] = useState([]);
     const [payment, setPayment] = useState("cod");
+    useEffect(() => {
+        getAddresses().then(setSavedAddresses).catch(() => setSavedAddresses([]));
+    }, []);
+    const selectSaved = (a) => setForm(f => ({
+        ...f,
+        fullName: a.fullName || f.fullName,
+        contact: a.phone || f.contact,
+        address: a.address || '',
+        city: a.city || '',
+        district: a.district || '',
+        postal: a.postalCode || ''
+    }));
     const [errors, setErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
 
@@ -163,6 +171,10 @@ export default function Checkout() {
             return;
         }
 
+        if (!user.emailVerified) {
+            notify('Please verify your email before placing an order.', 'error');
+            return;
+        }
         setSubmitting(true);
         try {
             const order = await placeOrder({
@@ -170,7 +182,7 @@ export default function Checkout() {
                 customerName: form.fullName,
                 customerEmail: user?.email || "guest@example.com",
                 items: cart.items.map(({product, qty}) => ({
-                    productId: product.id,
+                    productId: product._id || product.id,
                     name: product.name,
                     price: product.price,
                     qty,
@@ -181,10 +193,10 @@ export default function Checkout() {
                 deliveryFee: cart.deliveryFee,
                 totalAmount: cart.total,
                 paymentMethod: "Cash on Delivery",
-                address: {
-                    name: form.fullName,
+                deliveryAddress: {
+                    fullName: form.fullName,
                     phone: form.contact,
-                    line1: form.address,
+                    address: form.address,
                     city: form.city,
                     district: form.district,
                     postalCode: form.postal,
@@ -222,6 +234,16 @@ export default function Checkout() {
                     <section>
                         <SectionTitle number="1" title="Delivery Information"/>
                         <ValidationSummary errors={errors}/>
+                        {savedAddresses.length > 0 &&
+                            <div className="mt-4"><label className="text-sm font-bold">Saved address</label><select
+                                className="lum-input mt-2 w-full" defaultValue="" onChange={e => {
+                                const a = savedAddresses.find(x => (x._id || x.id) === e.target.value);
+                                if (a) selectSaved(a);
+                            }}>
+                                <option value="">Choose a saved address</option>
+                                {savedAddresses.map(a => <option key={a._id || a.id}
+                                                                 value={a._id || a.id}>{a.label || a.address} · {a.city}</option>)}
+                            </select></div>}
                         <div className="mt-5 grid gap-5 sm:grid-cols-2">
                             <Input label="Full Name" name="fullName" placeholder="John Doe" value={form.fullName}
                                    onChange={set("fullName")} error={errors.fullName} required/>

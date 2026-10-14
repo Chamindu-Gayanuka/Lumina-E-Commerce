@@ -7,21 +7,28 @@ import Product from "../src/models/Product.js";
 import Category from "../src/models/Category.js";
 import Order from "../src/models/Order.js";
 
-const CUSTOMER_ID = "6ac784b030ef89c9e9634f4c";
-
 const password = await bcrypt.hash("Lumina@2026", 12);
 
 try {
     await connect();
 
-    // 1. Find the existing customer. Do not delete users.
-    const customer = await User.findById(CUSTOMER_ID);
-
-    if (!customer) {
-        throw new Error(
-            `Customer not found: ${CUSTOMER_ID}. Check the customer ID in MongoDB.`
-        );
-    }
+    // 1. Ensure the test customer and administrator exist.
+    let customer = await User.findOne({email: "john.doe@example.com"});
+    if (!customer) customer = await User.create({
+        name: "John Doe",
+        email: "john.doe@example.com",
+        password,
+        role: "Customer",
+        emailVerified: true
+    });
+    await User.findOneAndUpdate({email: "admin@lumina.lk"}, {
+        name: "Admin User",
+        email: "admin@lumina.lk",
+        password,
+        role: "Administrator",
+        status: "Active",
+        emailVerified: true
+    }, {upsert: true, new: true, setDefaultsOnInsert: true});
 
     // 2. Find an existing seller or create a demo seller.
     let seller = await User.findOne({role: "Seller"});
@@ -54,7 +61,10 @@ try {
         );
     }
 
-    // 4. Add products only when they do not already exist.
+    // 4. Rebuild the catalog from backend data. This removes stale frontend/demo catalog records.
+    await Product.deleteMany({});
+    await Order.deleteMany({});
+
     const productData = [
         {
             name: "Aura Wireless Headphones",
@@ -134,8 +144,16 @@ try {
                 sellerId: seller._id,
                 status: "Active",
             });
-
             console.log(`Product added: ${data.name}`);
+        } else {
+            await Product.updateOne({_id: existingProduct._id}, {
+                $set: {
+                    stock: data.stock,
+                    status: "Active",
+                    sellerId: seller._id
+                }
+            });
+            console.log(`Product stock synchronized: ${data.name} -> ${data.stock}`);
         }
     }
 
@@ -168,6 +186,7 @@ try {
             productId: product._id,
             name: product.name,
             price: product.price,
+            qty: quantity,
             quantity,
             image: product.images?.[0] || "",
             seedData: true,

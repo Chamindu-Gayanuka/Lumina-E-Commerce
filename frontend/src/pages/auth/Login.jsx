@@ -5,8 +5,8 @@ import {AuthSplit} from "../../layouts/AuthShell";
 import Button from "../../components/ui/Button";
 import Input, {Checkbox, PasswordInput} from "../../components/ui/Input";
 import {ValidationSummary} from "../../components/ui/States";
-import {required, isEmail, validate, hasErrors} from "../../utils/validation";
-import {useAuth, dashboardPathByRole} from "../../context/AuthContext";
+import {hasErrors, isEmail, required, validate} from "../../utils/validation";
+import {dashboardPathByRole, useAuth} from "../../context/AuthContext";
 
 
 export default function Login() {

@@ -2,13 +2,13 @@ import React, {useEffect, useState} from "react";
 import {Link, useNavigate, useParams} from "react-router-dom";
 import {
     FaArrowLeftLong,
-    FaMoneyBill1Wave,
+    FaBoxesPacking,
     FaCircleCheck,
     FaGear,
     FaHouse,
     FaLocationDot,
     FaMap,
-    FaBoxesPacking,
+    FaMoneyBill1Wave,
     FaPhone,
     FaStore,
     FaTruck,
@@ -20,8 +20,8 @@ import {EmptyState} from "../../../components/ui/States";
 import {PageSpinner} from "../../../components/ui/Spinner";
 import {ConfirmDialog} from "../../../components/ui/Modal";
 import {Textarea} from "../../../components/ui/Input";
-import {formatPrice, formatDateTime} from "../../../utils/format";
-import {getOrder, cancelOrder} from "../../../services/orderService";
+import {formatDateTime, formatPrice} from "../../../utils/format";
+import {cancelOrder, getOrder} from "../../../services/orderService";
 import {useCart} from "../../../context/CartContext";
 import {useToast} from "../../../context/ToastContext";
 
@@ -167,7 +167,8 @@ export default function OrderDetails() {
                                             {it.name}
                                         </Link>
                                         <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-400">
-                                            <FaStore size={10}/> {it.seller}
+                                            <FaStore
+                                                size={10}/> {typeof it.seller === "object" ? (it.seller.storeName || it.seller.name || "Seller") : (it.seller || it.sellerName || "Seller")}
                                         </p>
                                         <p className="mt-1.5 flex items-center gap-3 text-xs text-slate-500">
                                             <span>Qty: <strong className="text-ink-800">{it.qty}</strong></span>
@@ -265,14 +266,19 @@ export default function OrderDetails() {
 
                     <section className="rounded-2xl bg-gradient-to-br from-primary-600 to-primary-800 p-6 text-white">
                         <h2 className="text-base font-extrabold">Need Help?</h2>
+
                         <p className="mt-2 text-sm leading-relaxed text-primary-100">
                             If you have any questions regarding your order, our support team is available 24/7.
                         </p>
+
                         <Button
                             variant="secondary"
                             size="sm"
                             className="mt-4 w-full border-white/20 bg-white/10 text-white backdrop-blur hover:bg-white/20"
-                            onClick={() => notify("Support chat opens in the future backend phase.", "info")}
+                            onClick={() => {
+                                window.location.href =
+                                    "mailto:chamindugayanuka2002@gmail.com?subject=Lumina%20Customer%20Support";
+                            }}
                         >
                             Contact Support
                         </Button>

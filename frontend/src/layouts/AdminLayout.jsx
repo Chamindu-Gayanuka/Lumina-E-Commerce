@@ -1,23 +1,22 @@
 import React from "react";
 import {
-    FaGaugeHigh,
-    FaUsers,
-    FaStore,
-    FaBoxOpen,
-    FaTags,
-    FaTruckFast,
-    FaBoxesStacked,
-    FaTriangleExclamation,
     FaBan,
+    FaBoxesStacked,
+    FaBoxOpen,
     FaChartLine,
+    FaGaugeHigh,
     FaGear,
+    FaStore,
+    FaTags,
+    FaTriangleExclamation,
+    FaTruckFast,
+    FaUsers,
 } from "react-icons/fa6";
 import DashboardShell from "./DashboardShell";
 import Footer from "../components/layout/Footer";
-import store from "../data/store";
 
 export function buildAdminNav() {
-    const pending = store.getSellers().filter((s) => s.approvalStatus === "Pending").length;
+    const pending = 0;
     return [
         {section: "Overview"},
         {to: "/admin", end: true, label: "Dashboard", icon: <FaGaugeHigh size={14}/>},

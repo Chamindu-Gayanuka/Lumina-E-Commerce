@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from "react";
 import {Link, useNavigate, useParams} from "react-router-dom";
-import {FaBan, FaBoxesPacking, FaTruck, FaHouse, FaCircleCheck} from "react-icons/fa6";
+import {FaBan, FaBoxesPacking, FaCircleCheck, FaHouse, FaTruck} from "react-icons/fa6";
 import OrderTimeline from "../../../components/orders/OrderTimeline";
 import Button from "../../../components/ui/Button";
 import ProductImage from "../../../components/product/ProductImage";
 import {EmptyState} from "../../../components/ui/States";
 import {PageSpinner} from "../../../components/ui/Spinner";
-import {formatPrice, formatDate, deliveryWindow} from "../../../utils/format";
+import {deliveryWindow, formatDate, formatPrice} from "../../../utils/format";
 import {getOrder} from "../../../services/orderService";
 
 const BANNERS = {
