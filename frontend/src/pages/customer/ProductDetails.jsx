@@ -12,7 +12,13 @@ import ProductCard from "../../components/product/ProductCard";
 import {PageSpinner} from "../../components/ui/Spinner";
 import {EmptyState} from "../../components/ui/States";
 import {formatDate, formatPrice} from "../../utils/format";
-import {getProduct, getRelatedProducts, isVerifiedPurchase, submitProductReview} from "../../services/productService";
+import {
+    getProduct,
+    getProductReviews,
+    getRelatedProducts,
+    isVerifiedPurchase,
+    submitProductReview
+} from "../../services/productService";
 import {useCart} from "../../context/CartContext";
 import {useToast} from "../../context/ToastContext";
 import {useAuth} from "../../context/AuthContext";
@@ -26,6 +32,7 @@ export default function ProductDetails() {
 
     const [product, setProduct] = useState(null);
     const [related, setRelated] = useState([]);
+    const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
     const [qty, setQty] = useState(1);
@@ -44,6 +51,7 @@ export default function ProductDetails() {
                 if (!alive) return;
 
                 setProduct(p);
+                getProductReviews(id).then(setReviews).catch(() => setReviews([]));
                 setQty(1);
                 setTab("description");
                 setActiveShot(0);
@@ -313,85 +321,87 @@ export default function ProductDetails() {
 
                     <div className="mt-6 flex flex-wrap items-center gap-3">
 
-                        <QuantityStepper
-                            value={effQty}
-                            min={1}
-                            max={
-                                out
-                                    ? 1
-                                    : Math.max(1, addable)
-                            }
-                            onChange={setQty}
-                        />
-
-                        <Button
-                            size="lg"
-                            className="flex-1 sm:flex-none"
-                            icon={<FaCartPlus size={15}/>}
-                            disabled={out || maxed}
-                            onClick={() => {
-
-                                const res = cart.add(
-                                    productId,
-                                    effQty,
-                                    product
-                                );
-
-                                if (res.requiresLogin) {
-                                    notify("Please sign in to add items to your cart.", "info");
-                                } else if (res.added > 0) {
-
-                                    notify(
-                                        res.capped
-                                            ? `Only ${res.stock} in stock - ${res.inCart} now in your cart`
-                                            : `You have successfully added ${res.added} ${res.added === 1 ? "item" : "items"} to your cart.`,
-                                        res.capped
-                                            ? "info"
-                                            : "success"
-                                    );
-
-                                } else if (res.soldOut) {
-
-                                    notify(
-                                        `${product.name} is out of stock`,
-                                        "error"
-                                    );
-
-                                } else {
-
-                                    notify(
-                                        `You already have ${res.inCart || info.inCart} × ${product.name} in your cart`,
-                                        "info"
-                                    );
-
+                        {user?.role !== "Administrator" && user?.role !== "Seller" && <>
+                            <QuantityStepper
+                                value={effQty}
+                                min={1}
+                                max={
+                                    out
+                                        ? 1
+                                        : Math.max(1, addable)
                                 }
-                            }}
-                        >
-                            {out
-                                ? "Out of Stock"
-                                : maxed
-                                    ? "Max in Cart"
-                                    : "Add to Cart"}
-                        </Button>
+                                onChange={setQty}
+                            />
 
-                        <Button
-                            size="lg"
-                            variant="outline"
-                            className="flex-1 sm:flex-none"
-                            disabled={out}
-                            onClick={() => {
+                            <Button
+                                size="lg"
+                                className="flex-1 sm:flex-none"
+                                icon={<FaCartPlus size={15}/>}
+                                disabled={out || maxed}
+                                onClick={() => {
 
-                                cart.add(
-                                    productId,
-                                    effQty,
-                                    product
-                                );
+                                    const res = cart.add(
+                                        productId,
+                                        effQty,
+                                        product
+                                    );
 
-                                navigate("/checkout");
-                            }}
-                        >
-                            Buy Now
-                        </Button>
+                                    if (res.requiresLogin) {
+                                        notify("Please sign in to add items to your cart.", "info");
+                                    } else if (res.added > 0) {
+
+                                        notify(
+                                            res.capped
+                                                ? `Only ${res.stock} in stock - ${res.inCart} now in your cart`
+                                                : `You have successfully added ${res.added} ${res.added === 1 ? "item" : "items"} to your cart.`,
+                                            res.capped
+                                                ? "info"
+                                                : "success"
+                                        );
+
+                                    } else if (res.soldOut) {
+
+                                        notify(
+                                            `${product.name} is out of stock`,
+                                            "error"
+                                        );
+
+                                    } else {
+
+                                        notify(
+                                            `You already have ${res.inCart || info.inCart} × ${product.name} in your cart`,
+                                            "info"
+                                        );
+
+                                    }
+                                }}
+                            >
+                                {out
+                                    ? "Out of Stock"
+                                    : maxed
+                                        ? "Max in Cart"
+                                        : "Add to Cart"}
+                            </Button>
+
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                className="flex-1 sm:flex-none"
+                                disabled={out}
+                                onClick={() => {
+
+                                    cart.add(
+                                        productId,
+                                        effQty,
+                                        product
+                                    );
+
+                                    navigate("/checkout");
+                                }}
+                            >
+                                Buy Now
+                            </Button>
+                        </>}
 
                     </div>
 
@@ -469,7 +479,7 @@ export default function ProductDetails() {
                             </div>
 
                             <Link
-                                to={`/store/${product.seller._id}`}
+                                to={`/store/${product.seller.id || product.seller._id}`}
                                 className="shrink-0 text-xs font-bold text-primary-600 hover:underline"
                             >
                                 Visit Store
@@ -647,18 +657,17 @@ export default function ProductDetails() {
                                     product={product}
                                     user={user}
                                     onPosted={async () => {
-                                        const fresh = await getProduct(id);
+                                        const [fresh, freshReviews] = await Promise.all([getProduct(id), getProductReviews(id)]);
 
-                                        if (fresh) {
-                                            setProduct(fresh);
-                                        }
+                                        if (fresh) setProduct(fresh);
+                                        setReviews(freshReviews || []);
                                     }}
                                     notify={notify}
                                 />
 
-                                {product.reviews?.length ? (
+                                {reviews.length ? (
 
-                                    product.reviews.map((r, index) => (
+                                    reviews.map((r, index) => (
 
                                         <article
                                             key={r._id || index}
@@ -676,7 +685,8 @@ export default function ProductDetails() {
                                                     <span
                                                         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-ink-700"
                                                     >
-                                                        {r.user?.charAt(0)}
+                                                        {r.avatar ? <img src={r.avatar} alt={r.user}
+                                                                         className="h-full w-full rounded-full object-cover"/> : (r.user?.charAt(0) || "C")}
                                                     </span>
 
                                                     <div className="min-w-0">
@@ -686,7 +696,7 @@ export default function ProductDetails() {
                                                         </p>
 
                                                         <p className="text-[11px] text-slate-400">
-                                                            {formatDate(r.date)} ·{" "}
+                                                            {formatDate(r.date || r.createdAt)} ·{" "}
                                                             {r.own
                                                                 ? (
                                                                     r.verified

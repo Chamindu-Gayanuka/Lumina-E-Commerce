@@ -82,7 +82,7 @@ export function OrdersBar({data}) {
 
 export const PIE_COLORS = ["#0d9488", "#f59e0b", "#6366f1", "#ec4899", "#10b981", "#0ea5e9"];
 
-export function StatusPie({data, nameKey = "name"}) {
+export function StatusPie({data = [], nameKey = "name"}) {
     return (
         <div className="h-56 w-full">
             <ResponsiveContainer width="100%" height="100%">

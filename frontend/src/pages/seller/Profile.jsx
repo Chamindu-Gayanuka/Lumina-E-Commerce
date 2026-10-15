@@ -3,8 +3,8 @@ import {FaCircleCheck, FaEnvelope, FaPhone, FaStore} from "react-icons/fa6";
 import Button from "../../components/ui/Button";
 import Input, {Textarea} from "../../components/ui/Input";
 import {PageSpinner} from "../../components/ui/Spinner";
-import {validate, required, isPhone} from "../../utils/validation";
-import {getSeller, updateSellerProfile} from "../../services/accountService";
+import {isPhone, required, validate} from "../../utils/validation";
+import {getProfile, updateSellerProfile} from "../../services/accountService";
 import {useToast} from "../../context/ToastContext";
 import {useAuth} from "../../context/AuthContext";
 import {formatNumber} from "../../utils/format";
@@ -12,7 +12,7 @@ import {formatNumber} from "../../utils/format";
 export default function SellerProfile() {
     const {notify} = useToast();
     const {user} = useAuth();
-    const sellerId = user?.sellerId || "s1";
+    const sellerId = user?._id || user?.id;
 
     const [seller, setSeller] = useState(null);
     const [form, setForm] = useState({storeName: "", phone: "", address: "", description: ""});
@@ -20,13 +20,14 @@ export default function SellerProfile() {
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
-        getSeller(sellerId).then((s) => {
+        getProfile().then((response) => {
+            const s = response?.user || response;
             setSeller(s);
             if (s) {
                 setForm({
                     storeName: s.storeName || "",
                     phone: s.phone || "",
-                    address: s.address || "",
+                    address: s.address || s.businessAddress || "",
                     description: s.description || ""
                 });
             }
@@ -48,7 +49,7 @@ export default function SellerProfile() {
         if (Object.keys(errs).length) return;
 
         setSaving(true);
-        await updateSellerProfile(sellerId, form);
+        await updateSellerProfile(sellerId, {...form, businessAddress: form.address});
         setSeller((s) => ({...s, ...form}));
         setSaving(false);
         notify("Store profile updated");

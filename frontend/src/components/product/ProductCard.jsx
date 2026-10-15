@@ -7,11 +7,14 @@ import {formatPrice} from "../../utils/format";
 import {useCart} from "../../context/CartContext";
 import useGate from "../../hooks/useGate";
 import {useToast} from "../../context/ToastContext";
+import {useAuth} from "../../context/AuthContext";
 
 export default function ProductCard({product, priority = false}) {
     const cart = useCart();
     const {notify} = useToast();
     const gate = useGate();
+    const {user} = useAuth();
+    const canShop = user?.role !== "Administrator" && user?.role !== "Seller";
 
     const productId = product._id;
 
@@ -105,7 +108,7 @@ export default function ProductCard({product, priority = false}) {
                     )}
                 </div>
 
-                <button
+                {canShop && <button
                     type="button"
                     disabled={out || maxed}
                     onClick={() =>
@@ -142,7 +145,7 @@ export default function ProductCard({product, priority = false}) {
                         : maxed
                             ? "Max in Cart"
                             : "Add to Cart"}
-                </button>
+                </button>}
             </div>
         </article>
     );

@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState, useRef} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import useUrlPage from "../../hooks/useUrlPage";
 import {Link, useNavigate, useSearchParams} from "react-router-dom";
 import {FaCheck, FaDownload, FaEye, FaUserPlus, FaUsers, FaUserSlash} from "react-icons/fa6";
@@ -168,7 +168,17 @@ export default function AdminUsers() {
                     variant="secondary"
                     className="w-full shrink-0 sm:w-auto"
                     icon={<FaDownload size={11}/>}
-                    onClick={() => notify("CSV export ships with the backend phase.", "info")}
+                    onClick={() => {
+                        const headers = ["id", "name", "email", "role", "status"];
+                        const csv = [headers.join(","), ...users.map(u => headers.map(h => JSON.stringify(u[h] ?? "")).join(","))].join("\n");
+                        const blob = new Blob([csv], {type: "text/csv;charset=utf-8"});
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = "lumina-users.csv";
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    }}
                 >
                     Export
                 </Button>
@@ -229,7 +239,7 @@ export default function AdminUsers() {
                         aria-label="Filter by role"
                         value={tab}
                         onChange={(e) => setTab(e.target.value)}
-                        className="h-10 w-full text-sm sm:w-auto sm:min-w-32"
+                        className="h-10 w-full px-3 text-sm sm:w-auto sm:min-w-32"
                     >
                         <option value="All">Role: All</option>
                         <option value="Customer">Customers</option>
@@ -241,7 +251,7 @@ export default function AdminUsers() {
                         aria-label="Filter by status"
                         value={status}
                         onChange={(e) => setStatus(e.target.value)}
-                        className="h-10 w-full text-sm sm:w-auto sm:min-w-32"
+                        className="h-10 w-full px-3 text-sm sm:w-auto sm:min-w-32"
                     >
                         <option value="">Status: All</option>
                         <option value="Active">Active</option>
@@ -252,7 +262,7 @@ export default function AdminUsers() {
                         aria-label="Filter by registration date"
                         value={reg}
                         onChange={(e) => setReg(e.target.value)}
-                        className="h-10 w-full text-sm sm:w-auto sm:min-w-40"
+                        className="h-10 w-full px-3 text-sm sm:w-auto sm:min-w-40"
                     >
                         {REG_RANGES.map((r) => (
                             <option key={r.value} value={r.value}>
