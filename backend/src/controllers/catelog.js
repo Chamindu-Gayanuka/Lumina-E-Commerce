@@ -102,13 +102,14 @@ export const update = async (req, res) => {
     res.json(await Product.findOneAndUpdate(filter, data, {new: true}));
 };
 export const remove = async (req, res) => {
-    const p = await Product.findByIdAndDelete(req.params.id);
+    const filter = {_id: req.params.id, ...(req.user.role === 'Seller' ? {sellerId: req.user.sub} : {})};
+    const p = await Product.findOneAndDelete(filter);
     if (p?.imagePublicId) cloudinary.uploader.destroy(p.imagePublicId).catch(console.error);
     res.status(204).end()
 };
 export const categories = async (req, res) => res.json(await Category.find({status: 'Active'}));
 export const createCategory = async (req, res) => res.status(201).json(await Category.create(req.body));
-export const reviews = async (req, res) => res.json(await Review.find({productId: req.params.id}).sort({createdAt: -1}));
+export const reviews = async (req, res) => res.json(await Review.find({productId: req.params.id}).populate('userId', 'name avatar').sort({createdAt: -1}));
 
 export async function addReview(req, res) {
     const r = await Review.create({

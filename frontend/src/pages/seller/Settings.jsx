@@ -43,11 +43,12 @@ export default function SellerSettings() {
     const {user} = useAuth();
     const [deliveryMode, setDeliveryMode] = useState("free"); // free | charge (Rs. 450)
     const [savingDelivery, setSavingDelivery] = useState(false);
+    const sellerId = user?._id || user?.id;
 
     useEffect(() => {
         let alive = true;
-        if (!user?.sellerId) return undefined;
-        getSeller(user.sellerId)
+        if (!sellerId) return undefined;
+        getSeller(sellerId)
             .then((sr) => {
                 if (alive && sr) setDeliveryMode(sr.deliveryFee > 0 ? "charge" : "free");
             })
@@ -56,16 +57,16 @@ export default function SellerSettings() {
         return () => {
             alive = false;
         };
-    }, [user?.sellerId]);
+    }, [sellerId]);
 
     const saveDelivery = async () => {
-        if (!user?.sellerId) {
+        if (!sellerId) {
             notify("Seller profile not found for this session.", "error");
             return;
         }
         setSavingDelivery(true);
         try {
-            await updateSellerProfile(user.sellerId, {
+            await updateSellerProfile(sellerId, {
                 deliveryFee: deliveryMode === "charge" ? DELIVERY_FEE : 0,
             });
             notify(

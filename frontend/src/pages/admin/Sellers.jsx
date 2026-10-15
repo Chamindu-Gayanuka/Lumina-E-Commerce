@@ -1,31 +1,39 @@
-import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import useUrlPage from "../../hooks/useUrlPage";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { FaArrowUpRightFromSquare, FaCheck, FaDownload, FaEye, FaStore, FaTriangleExclamation, FaUserSlash } from "react-icons/fa6";
+import {Link, useNavigate, useSearchParams} from "react-router-dom";
+import {
+    FaArrowUpRightFromSquare,
+    FaCheck,
+    FaDownload,
+    FaEye,
+    FaStore,
+    FaTriangleExclamation,
+    FaUserSlash
+} from "react-icons/fa6";
 import SearchBar from "../../components/ui/SearchBar";
-import { Select } from "../../components/ui/Input";
-import Badge, { SellerStatusBadge } from "../../components/ui/Badge";
+import {Select} from "../../components/ui/Input";
+import Badge, {SellerStatusBadge} from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 import Pagination from "../../components/ui/Pagination";
-import Dropdown, { DropdownItem } from "../../components/ui/Dropdown";
-import { ConfirmDialog } from "../../components/ui/Modal";
-import { EmptyState } from "../../components/ui/States";
-import { PageSpinner } from "../../components/ui/Spinner";
+import Dropdown, {DropdownItem} from "../../components/ui/Dropdown";
+import {ConfirmDialog} from "../../components/ui/Modal";
+import {EmptyState} from "../../components/ui/States";
+import {PageSpinner} from "../../components/ui/Spinner";
 import SellerReviewModal from "./SellerReviewModal";
-import { formatNumber } from "../../utils/format";
-import { listSellers, setSellerApproval } from "../../services/accountService";
-import { useToast } from "../../context/ToastContext";
+import {formatNumber} from "../../utils/format";
+import {listSellers, setSellerApproval} from "../../services/accountService";
+import {useToast} from "../../context/ToastContext";
 
 const TABS = [
-    { key: "All", label: "All" },
-    { key: "Pending", label: "Pending" },
-    { key: "Approved", label: "Approved" },
-    { key: "Rejected", label: "Rejected" },
-    { key: "Suspended", label: "Suspended" },
+    {key: "All", label: "All"},
+    {key: "Pending", label: "Pending"},
+    {key: "Approved", label: "Approved"},
+    {key: "Rejected", label: "Rejected"},
+    {key: "Suspended", label: "Suspended"},
 ];
 
 export default function AdminSellers() {
-    const { notify } = useToast();
+    const {notify} = useToast();
     const navigate = useNavigate();
     const [params, setParams] = useSearchParams();
     const [sellers, setSellers] = useState(null);
@@ -43,7 +51,7 @@ export default function AdminSellers() {
 
     const counts = useMemo(() => {
         const list = sellers || [];
-        return { All: list.length, ...Object.fromEntries(["Pending", "Approved", "Rejected", "Suspended"].map((k) => [k, list.filter((s) => s.approvalStatus === k).length])) };
+        return {All: list.length, ...Object.fromEntries(["Pending", "Approved", "Rejected", "Suspended"].map((k) => [k, list.filter((s) => s.approvalStatus === k).length]))};
     }, [sellers]);
 
     const filtered = useMemo(() => {
@@ -59,7 +67,10 @@ export default function AdminSellers() {
     const firstRender = useRef(true);
     useEffect(() => {
         // Keep a deep-linked ?page=n on mount; reset to page 1 only when filters change.
-        if (firstRender.current) { firstRender.current = false; return; }
+        if (firstRender.current) {
+            firstRender.current = false;
+            return;
+        }
         setPage(1);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tab, search, perPage]);
@@ -67,22 +78,33 @@ export default function AdminSellers() {
     const pages = Math.max(1, Math.ceil(filtered.length / perPage));
     const rows = filtered.slice((page - 1) * perPage, page * perPage);
 
-    const act = async (seller, status, label) => {
+    const act = async (seller, status) => {
         await setSellerApproval(seller.id, status);
         notify(`${seller.storeName} → ${status}.`, status === "Approved" ? "success" : "info");
         load();
     };
 
-    if (!sellers) return <PageSpinner label="Loading partners…" />;
+    if (!sellers) return <PageSpinner label="Loading partners…"/>;
 
     return (
         <div>
             <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                    <h1 className="text-2xl font-extrabold tracking-tight text-ink-900 sm:text-3xl">Seller Management</h1>
+                    <h1 className="text-2xl font-extrabold tracking-tight text-ink-900 sm:text-3xl">Seller
+                        Management</h1>
                     <p className="mt-1 text-sm text-slate-500">Review, approve, and manage seller accounts</p>
                 </div>
-                <Button size="sm" variant="secondary" icon={<FaDownload size={11} />} onClick={() => notify("CSV export ships with the backend phase.", "info")}>
+                <Button size="sm" variant="secondary" icon={<FaDownload size={11}/>} onClick={() => {
+                    const headers = ["id", "name", "email", "storeName", "approvalStatus", "status"];
+                    const csv = [headers.join(","), ...sellers.map(s => headers.map(h => JSON.stringify(s[h] ?? "")).join(","))].join("\n");
+                    const blob = new Blob([csv], {type: "text/csv;charset=utf-8"});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "lumina-sellers.csv";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                }}>
                     Export
                 </Button>
             </div>
@@ -90,11 +112,15 @@ export default function AdminSellers() {
             {/* KPI cards */}
             <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
                 {[
-                    { label: "Total Sellers", value: counts.All, cls: "" },
-                    { label: "Pending Approval", value: counts.Pending, cls: "border-amber-200 bg-amber-50/60 ring-1 ring-amber-100" },
-                    { label: "Approved", value: counts.Approved, cls: "" },
-                    { label: "Rejected", value: counts.Rejected, cls: "" },
-                    { label: "Suspended", value: counts.Suspended, cls: "" },
+                    {label: "Total Sellers", value: counts.All, cls: ""},
+                    {
+                        label: "Pending Approval",
+                        value: counts.Pending,
+                        cls: "border-amber-200 bg-amber-50/60 ring-1 ring-amber-100"
+                    },
+                    {label: "Approved", value: counts.Approved, cls: ""},
+                    {label: "Rejected", value: counts.Rejected, cls: ""},
+                    {label: "Suspended", value: counts.Suspended, cls: ""},
                 ].map((k) => (
                     <div key={k.label} className={`lum-card p-4 sm:p-5 ${k.cls}`}>
                         <p className={`text-[22px] font-extrabold leading-none tracking-tight ${k.cls ? "text-amber-600" : "text-ink-900"}`}>{formatNumber(k.value)}</p>
@@ -106,16 +132,17 @@ export default function AdminSellers() {
             <div className="lum-card mt-6 p-4 sm:p-5">
                 {/* Filter row */}
                 <div className="flex flex-wrap items-center gap-3">
-                    <SearchBar value={search} onChange={setSearch} placeholder="Search by seller, business, or email…" className="w-full sm:max-w-xs" />
+                    <SearchBar value={search} onChange={setSearch} placeholder="Search by seller, business, or email…"
+                               className="w-full sm:max-w-xs"/>
                     <Select
                         name="sTab"
                         aria-label="Filter by approval status"
                         value={tab}
                         onChange={(e) => {
                             setTab(e.target.value);
-                            setParams(e.target.value === "All" ? {} : { tab: e.target.value });
+                            setParams(e.target.value === "All" ? {} : {tab: e.target.value});
                         }}
-                        className="h-10 w-auto min-w-36 text-sm"
+                        className="h-10 w-auto px-3 min-w-36 text-sm"
                     >
                         {TABS.map((t) => (
                             <option key={t.key} value={t.key}>
@@ -123,14 +150,16 @@ export default function AdminSellers() {
                             </option>
                         ))}
                     </Select>
-                    <span className="ml-auto hidden items-center gap-1.5 text-xs font-semibold text-slate-400 md:inline-flex">
-            <FaTriangleExclamation className="text-amber-500" size={11} />
+                    <span
+                        className="ml-auto hidden items-center gap-1.5 text-xs font-semibold text-slate-400 md:inline-flex">
+            <FaTriangleExclamation className="text-amber-500" size={11}/>
                         {counts.Pending} application{counts.Pending === 1 ? "" : "s"} waiting
           </span>
                 </div>
 
                 {/* Tabs */}
-                <div className="mt-4 flex gap-1 overflow-x-auto border-b border-slate-200" role="tablist" aria-label="Seller approval groups">
+                <div className="mt-4 flex gap-1 overflow-x-auto border-b border-slate-200" role="tablist"
+                     aria-label="Seller approval groups">
                     {TABS.map((t) => {
                         const isActive = tab === t.key;
                         return (
@@ -141,7 +170,7 @@ export default function AdminSellers() {
                                 aria-selected={isActive}
                                 onClick={() => {
                                     setTab(t.key);
-                                    setParams(t.key === "All" ? {} : { tab: t.key });
+                                    setParams(t.key === "All" ? {} : {tab: t.key});
                                 }}
                                 className={`relative flex items-center whitespace-nowrap px-3.5 py-2.5 text-sm font-semibold transition-colors ${
                                     isActive ? (t.key === "Pending" ? "text-amber-600" : "text-primary-700") : "text-slate-500 hover:text-ink-800"
@@ -155,7 +184,8 @@ export default function AdminSellers() {
                                 >
                   {counts[t.key]}
                 </span>
-                                {isActive && <span className={`absolute inset-x-2 -bottom-px h-0.5 rounded-full ${t.key === "Pending" ? "bg-amber-500" : "bg-primary-600"}`} />}
+                                {isActive && <span
+                                    className={`absolute inset-x-2 -bottom-px h-0.5 rounded-full ${t.key === "Pending" ? "bg-amber-500" : "bg-primary-600"}`}/>}
                             </button>
                         );
                     })}
@@ -163,7 +193,8 @@ export default function AdminSellers() {
 
                 {rows.length === 0 ? (
                     <div className="py-10">
-                        <EmptyState icon={<FaStore size={30} />} title="No sellers here" message="Try another tab or clear the search." />
+                        <EmptyState icon={<FaStore size={30}/>} title="No sellers here"
+                                    message="Try another tab or clear the search."/>
                     </div>
                 ) : (
                     <div className="mt-2 overflow-x-auto">
@@ -180,24 +211,29 @@ export default function AdminSellers() {
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                             {rows.map((s) => (
-                                <tr key={s.id} className={`transition-colors hover:bg-slate-50/70 ${s.approvalStatus === "Pending" ? "border-l-2 border-l-amber-400 bg-amber-50/30" : ""}`}>
+                                <tr key={s.id}
+                                    className={`transition-colors hover:bg-slate-50/70 ${s.approvalStatus === "Pending" ? "border-l-2 border-l-amber-400 bg-amber-50/30" : ""}`}>
                                     <td className="px-4 py-3.5">
-                                        <button type="button" onClick={() => navigate(`/admin/sellers/${s.id}`)} className="flex items-center gap-3 text-left">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-ink-700">
-                          {s.storeName.split(/\s+/).map((w) => w[0]).slice(0, 2).join("")}
+                                        <button type="button" onClick={() => navigate(`/admin/sellers/${s.id}`)}
+                                                className="flex items-center gap-3 text-left">
+                        <span
+                            className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-ink-700">
+                          {(s.storeName || s.name || "?").split(/\s+/).map((w) => w[0]).slice(0, 2).join("")}
                         </span>
-                                            <span className="font-bold text-ink-900 hover:text-primary-700">{s.storeName}</span>
+                                            <span
+                                                className="font-bold text-ink-900 hover:text-primary-700">{s.storeName}</span>
                                         </button>
                                     </td>
                                     <td className="px-4 py-3.5">
                                         <p className="flex items-center gap-1.5 font-semibold text-ink-800">
-                                            <FaStore className="text-slate-300" size={10} /> {s.businessName || s.storeName}
+                                            <FaStore className="text-slate-300"
+                                                     size={10}/> {s.businessName || s.storeName}
                                         </p>
                                         <p className="text-xs text-slate-400">{s.city || "-"}</p>
                                     </td>
                                     <td className="px-4 py-3.5 text-slate-500">{s.ownerEmail}</td>
                                     <td className="px-4 py-3.5">
-                                        <SellerStatusBadge status={s.approvalStatus} />
+                                        <SellerStatusBadge status={s.approvalStatus}/>
                                     </td>
                                     <td className="px-4 py-3.5">
                                         <Badge tone={s.accountStatus === "Active" ? "green" : "slate"} uppercase dot>
@@ -219,11 +255,11 @@ export default function AdminSellers() {
                                                         onClick={() => act(s, "Approved", "Approve")}
                                                         className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100"
                                                     >
-                                                        <FaCheck size={9} /> Approve
+                                                        <FaCheck size={9}/> Approve
                                                     </button>
                                                     <button
                                                         type="button"
-                                                        onClick={() => setReviewing({ seller: s, initial: "reject" })}
+                                                        onClick={() => setReviewing({seller: s, initial: "reject"})}
                                                         className="rounded-lg border border-red-200 px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-red-600 hover:bg-red-50"
                                                     >
                                                         Reject
@@ -242,17 +278,20 @@ export default function AdminSellers() {
                                             {s.approvalStatus === "Approved" && (
                                                 <Dropdown
                                                     trigger={(open) => (
-                                                        <span className={`flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 ring-1 ring-slate-200 hover:bg-slate-50 ${open ? "bg-slate-100" : ""}`}>⋮</span>
+                                                        <span
+                                                            className={`flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 ring-1 ring-slate-200 hover:bg-slate-50 ${open ? "bg-slate-100" : ""}`}>⋮</span>
                                                     )}
                                                 >
-                                                    <DropdownItem icon={<FaEye size={12} />} to={`/admin/sellers/${s.id}`}>
+                                                    <DropdownItem icon={<FaEye size={12}/>}
+                                                                  to={`/admin/sellers/${s.id}`}>
                                                         Open seller details
                                                     </DropdownItem>
-                                                    <DropdownItem icon={<FaArrowUpRightFromSquare size={12} />} to={`/store/${s.id}`}>
+                                                    <DropdownItem icon={<FaArrowUpRightFromSquare size={12}/>}
+                                                                  to={`/store/${s.id}`}>
                                                         View public storefront
                                                     </DropdownItem>
                                                     <DropdownItem
-                                                        icon={<FaUserSlash size={12} />}
+                                                        icon={<FaUserSlash size={12}/>}
                                                         danger
                                                         onClick={() =>
                                                             setConfirm({
@@ -281,9 +320,11 @@ export default function AdminSellers() {
                         Showing {rows.length === 0 ? 0 : (page - 1) * perPage + 1}–{Math.min(page * perPage, filtered.length)} of {formatNumber(filtered.length)}
                         {tab !== "All" && ` ${tab.toLowerCase()}`}
                     </p>
-                    <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
+                    <label
+                        className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
                         Rows per page:
-                        <Select name="sPerPage" aria-label="Rows per page" value={String(perPage)} onChange={(e) => setPerPage(Number(e.target.value))} className="h-11 w-auto text-xs">
+                        <Select name="sPerPage" aria-label="Rows per page" value={String(perPage)}
+                                onChange={(e) => setPerPage(Number(e.target.value))} className="h-11 w-auto text-xs">
                             {[10, 25, 50].map((n) => (
                                 <option key={n} value={n}>
                                     {n}
@@ -291,7 +332,7 @@ export default function AdminSellers() {
                             ))}
                         </Select>
                     </label>
-                    <Pagination page={page} pages={pages} onChange={setPage} className="ml-auto" />
+                    <Pagination page={page} pages={pages} onChange={setPage} className="ml-auto"/>
                 </div>
             </div>
 

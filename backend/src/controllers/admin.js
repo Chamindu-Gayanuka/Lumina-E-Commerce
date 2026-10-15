@@ -3,6 +3,7 @@ import Product from '../models/Product.js';
 import Order from '../models/Order.js';
 import Category from '../models/Category.js';
 import {mail} from '../utils/mailer.js';
+import mongoose from 'mongoose';
 
 const safe = u => {
     if (!u) return null;
@@ -79,40 +80,86 @@ export const updateInventory = async (req, res) => {
     res.json(p)
 };
 export const inventory = async (req, res) => {
-    let q = {};
+    let q = req.user.role === 'Seller' ? {sellerId: req.user.sub} : {};
     if (req.query.view === 'low') q = {stock: {$gt: 0, $lte: 5}};
     if (req.query.view === 'out') q = {stock: 0};
     res.json(await Product.find(q))
 };
 export const sellerStats = async (req, res) => {
-    const products = await Product.find({sellerId: req.user.sub});
-    const orders = await Order.find({'items.sellerId': req.user.sub});
+    const sellerId = new mongoose.Types.ObjectId(req.user.sub);
+    const products = await Product.find({sellerId});
+    const orders = await Order.find({'items.sellerId': sellerId}).sort({createdAt: -1});
+    const salesOrders = orders.filter(o => o.status !== 'Cancelled');
+    const revenue = salesOrders.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
+    const sales = Array.from({length: 12}, (_, index) => {
+        const date = new Date();
+        date.setMonth(date.getMonth() - (11 - index), 1);
+        const monthOrders = salesOrders.filter(o => {
+            const d = new Date(o.createdAt);
+            return d.getMonth() === date.getMonth() && d.getFullYear() === date.getFullYear();
+        });
+        return {
+            month: date.toLocaleString('en-US', {month: 'short'}),
+            revenue: monthOrders.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0),
+            orders: monthOrders.length
+        };
+    });
+    const topProducts = products.map(p => ({
+        name: p.name,
+        revenue: p.price * (p.soldCount || 0)
+    })).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
     res.json({
         snapshot: {
             products: products.length,
             orders: orders.length,
-            revenue: orders.filter(o => o.status === 'Delivered').reduce((s, o) => s + o.totalAmount, 0),
+            revenue,
             lowStock: products.filter(p => p.stock > 0 && p.stock <= p.lowStockLevel).length,
             outOfStock: products.filter(p => p.stock === 0).length
-        }, orders
+        }, sales, topProducts, orders
     });
 };
 export const stats = async (req, res) => {
-    const [users, products, orders] = await Promise.all([User.countDocuments(), Product.countDocuments(), Order.find().sort({createdAt: -1})]);
+    const [users, products, orders, customers, sellers, pendingSellers, activeProducts] = await Promise.all([User.countDocuments(), Product.countDocuments(), Order.find().sort({createdAt: -1}), User.countDocuments({role: 'Customer'}), User.countDocuments({role: 'Seller'}), User.countDocuments({
+        role: 'Seller',
+        approvalStatus: 'Pending'
+    }), Product.countDocuments({status: 'Active'})]);
     const statuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
     const ordersByStatus = statuses.map(name => ({name, value: orders.filter(o => o.status === name).length}));
     const revenue = orders.filter(o => o.status !== 'Cancelled').reduce((s, o) => s + (Number(o.totalAmount) || 0), 0);
+    const sales = Array.from({length: 12}, (_, index) => {
+        const date = new Date();
+        date.setMonth(date.getMonth() - (11 - index), 1);
+        const month = date.toLocaleString('en-US', {month: 'short'});
+        const monthOrders = orders.filter(o => {
+            const d = new Date(o.createdAt);
+            return d.getMonth() === date.getMonth() && d.getFullYear() === date.getFullYear();
+        });
+        return {
+            month,
+            revenue: monthOrders.filter(o => o.status !== 'Cancelled').reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0),
+            orders: monthOrders.length
+        };
+    });
     res.json({
         snapshot: {
             users,
             products,
             totalUsers: users,
+            totalCustomers: customers,
+            totalSellers: sellers,
+            pendingSellers,
             totalProducts: products,
+            activeProducts,
             totalOrders: orders.length,
+            pendingOrders: orders.filter(o => o.status === 'Pending').length,
+            lowStock: await Product.countDocuments({stock: {$gt: 0, $lte: 5}}),
+            outOfStock: await Product.countDocuments({stock: 0}),
+            avgOrderValue: orders.length ? revenue / orders.length : 0,
             orders: orders.length,
             revenue,
-            ordersByStatus
-        }, sales: orders, orders
+            ordersByStatus,
+            categorySplit: []
+        }, sales, orders
     });
 };
 export const categories = async (req, res) => res.json(await Category.find());

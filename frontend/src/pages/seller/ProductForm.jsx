@@ -4,19 +4,11 @@ import {FaArrowLeftLong, FaImage, FaPlus, FaTrashCan, FaUpload} from "react-icon
 import Button from "../../components/ui/Button";
 import Input, {Select, Textarea} from "../../components/ui/Input";
 import {ValidationSummary} from "../../components/ui/States";
-import {required, requiredAmount, requiredInteger, validate, hasErrors} from "../../utils/validation";
-import {saveProduct, getProduct} from "../../services/productService";
+import {hasErrors, required, requiredAmount, requiredInteger, validate} from "../../utils/validation";
+import {getProduct, saveProduct} from "../../services/productService";
 import {listCategories} from "../../services/accountService";
 import {useAuth} from "../../context/AuthContext";
 import {useToast} from "../../context/ToastContext";
-
-const IMAGE_CHOICES = [
-    {label: "Headphones", value: "/images/product-headphones.jpg"},
-    {label: "Watch", value: "/images/product-watch.jpg"},
-    {label: "Lamp", value: "/images/product-lamp.jpg"},
-    {label: "Bag", value: "/images/product-bag.jpg"},
-    {label: "No image (gradient placeholder)", value: null},
-];
 
 export default function ProductForm() {
     const {productId} = useParams();
@@ -24,7 +16,7 @@ export default function ProductForm() {
     const navigate = useNavigate();
     const {notify} = useToast();
     const {user} = useAuth();
-    const sellerId = user?.sellerId || "s1";
+    const sellerId = user?._id || user?.id;
 
     const [categories, setCategories] = useState([]);
     const [errors, setErrors] = useState({});
@@ -57,7 +49,7 @@ export default function ProductForm() {
                     lowStockLevel: String(p.lowStockLevel ?? 5),
                     status: p.status,
                     shortDescription: p.shortDescription || "",
-                    description: (p.description || []).join("\n\n"),
+                    description: Array.isArray(p.description) ? p.description.join("\n\n") : (p.description || ""),
                     images: p.images?.length ? p.images : p.image ? [p.image] : [],
                     specs: p.specs?.length ? p.specs : [{label: "", value: ""}],
                 });
@@ -76,13 +68,6 @@ export default function ProductForm() {
     const MAX_BYTES = 1024 * 1024;
     const [uploadError, setUploadError] = useState("");
     const fileInputRef = useRef(null);
-
-    const pushPhoto = (src) =>
-        setForm((f) =>
-            !src || f.images.includes(src) || f.images.length >= MAX_PHOTOS
-                ? f
-                : {...f, images: [...f.images, src]}
-        );
 
     const removePhoto = (idx) =>
         setForm((f) => ({...f, images: f.images.filter((_, i) => i !== idx)}));
@@ -417,42 +402,9 @@ export default function ProductForm() {
                         ) : (
                             <div
                                 className="mt-3 rounded-xl border-2 border-dashed border-slate-200 px-4 py-8 text-center text-sm font-medium text-slate-400">
-                                No photos yet - upload from your device or attach a demo asset below.
+                                No photos yet - upload images from your device.
                             </div>
                         )}
-
-                        <p className="lum-label mt-5">
-                            Or attach a demo asset
-                            <span className="ml-1.5 font-semibold text-slate-400">
-                                (adds to the gallery)
-                            </span>
-                        </p>
-                        <div className="mt-1.5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-                            {IMAGE_CHOICES.filter((c) => c.value).map((choice) => (
-                                <button
-                                    key={choice.label}
-                                    type="button"
-                                    onClick={() => pushPhoto(choice.value)}
-                                    className={`relative overflow-hidden rounded-xl border-2 transition-all hover:-translate-y-0.5 ${
-                                        form.images.includes(choice.value)
-                                            ? "border-primary-600 ring-2 ring-primary-100"
-                                            : "border-slate-200 hover:border-slate-300"
-                                    }`}
-                                >
-                                    <img
-                                        src={choice.value}
-                                        alt={choice.label}
-                                        className="h-16 w-full object-cover sm:h-14"
-                                    />
-                                    <span
-                                        className="absolute inset-x-0 bottom-0 bg-ink/70 py-0.5 text-center text-[10px] font-bold uppercase tracking-wide text-white">
-                                        {form.images.includes(choice.value)
-                                            ? "Added ✓"
-                                            : choice.label}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
                     </div>
                 </section>
 

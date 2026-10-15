@@ -9,13 +9,13 @@ import {
     FaCircleCheck,
     FaClock,
     FaIdCard,
+    FaListUl,
     FaPhone,
     FaRegEnvelope,
     FaStore,
-    FaListUl,
-    FaXmark,
     FaTruckFast,
     FaUser,
+    FaXmark,
 } from "react-icons/fa6";
 import Badge, {SellerStatusBadge} from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
@@ -27,7 +27,7 @@ import {ConfirmDialog} from "../../components/ui/Modal";
 import {EmptyState} from "../../components/ui/States";
 import {PageSpinner} from "../../components/ui/Spinner";
 import SellerReviewModal from "./SellerReviewModal";
-import {formatDate, formatPrice, formatNumber} from "../../utils/format";
+import {formatDate, formatNumber, formatPrice} from "../../utils/format";
 import {getAdminSellerDetail, setSellerApproval} from "../../services/accountService";
 import {useToast} from "../../context/ToastContext";
 
@@ -97,7 +97,7 @@ export default function AdminSellerDetails() {
 
     const pending = seller.approvalStatus === "Pending";
     const accountActive = (seller.accountStatus || (seller.approvalStatus === "Approved" ? "Active" : "Inactive")) === "Active";
-    const initials = seller.storeName.split(/\s+/).map((w) => w[0]).slice(0, 2).join("");
+    const initials = (seller.storeName || seller.name || "?").split(/\s+/).map((w) => w[0]).slice(0, 2).join("");
     const pages = Math.max(1, Math.ceil(products.length / perPage));
     const pageRows = products.slice((prodPage - 1) * perPage, prodPage * perPage);
 

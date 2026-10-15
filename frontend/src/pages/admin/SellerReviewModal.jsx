@@ -49,7 +49,7 @@ export default function SellerReviewModal({open, seller, onClose, onDecided, ini
         ["Bank Account", seller.verification?.bankAccount],
         ["Product Images", seller.verification?.productImages],
     ];
-    const initials = seller.storeName.split(/\s+/).map((w) => w[0]).slice(0, 2).join("");
+    const initials = (seller.storeName || seller.name || seller.ownerName || "?").split(/\s+/).map((w) => w[0]).slice(0, 2).join("");
 
     const submit = async () => {
         setTouched(true);

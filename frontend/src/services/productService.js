@@ -9,7 +9,11 @@ const normalize = p => ({
     ...p,
     stock: Number(p.stock ?? p.quantity ?? p.inventory ?? 0),
     _id: p._id || p.id,
-    seller: p.seller || ((p.sellerId && typeof p.sellerId === 'object') ? p.sellerId : null)
+    id: p.id || p._id,
+    seller: p.seller || ((p.sellerId && typeof p.sellerId === 'object') ? {
+        ...p.sellerId,
+        id: p.sellerId.id || p.sellerId._id
+    } : null)
 });
 
 export async function listProducts(query = {}) {
@@ -41,7 +45,7 @@ export async function getPopularProducts(limit = 4) {
 }
 
 export async function getSellerProducts(sellerId) {
-    return (await api.get('/products', {params: {sellerId, includeAll: true, perPage: 100}})).data.items
+    return (await api.get('/products', {params: {sellerId, includeAll: true, perPage: 100}})).data.items.map(normalize)
 }
 
 export async function saveProduct(data, id) {
@@ -61,8 +65,28 @@ export async function updateStock(id, quantity) {
     return (await api.patch(`/inventory/${id}`, {quantity})).data
 }
 
-export async function getInventory(params) {
-    return (await api.get('/inventory', {params})).data
+export async function getInventory(params = {}) {
+    const rows = (await api.get('/inventory', {params})).data;
+    return rows.map(product => ({
+        productId: product._id,
+        product: {
+            ...product,
+            sellerId: typeof product.sellerId === 'object' ? product.sellerId?._id : product.sellerId
+        },
+        seller: product.sellerId && typeof product.sellerId === 'object' ? product.sellerId : null,
+        quantity: Number(product.stock || 0),
+        reservedQuantity: 0,
+        lastUpdated: product.updatedAt
+    }));
+}
+
+export async function getProductReviews(id) {
+    return (await api.get(`/products/${id}/reviews`)).data.map(r => ({
+        ...r,
+        user: typeof r.userId === 'object' ? (r.userId?.name || 'Customer') : (r.user || 'Customer'),
+        avatar: typeof r.userId === 'object' ? (r.userId?.avatar || '') : (r.avatar || ''),
+        userId: typeof r.userId === 'object' ? r.userId?._id : r.userId
+    }));
 }
 
 export async function submitProductReview(id, payload) {

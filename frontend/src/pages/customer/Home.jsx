@@ -71,8 +71,6 @@ export default function Home() {
                                 Shop Now
                             </Button>
                         </div>
-                        <p className="mt-10 text-sm font-semibold text-primary-700">Explore products from Lumina
-                            sellers</p>
                     </div>
                     <div className="relative">
                         <div className="overflow-hidden rounded-3xl shadow-lift ring-1 ring-slate-900/5">
