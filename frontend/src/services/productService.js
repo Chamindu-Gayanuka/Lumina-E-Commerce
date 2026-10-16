@@ -12,7 +12,8 @@ const normalize = p => ({
     id: p.id || p._id,
     seller: p.seller || ((p.sellerId && typeof p.sellerId === 'object') ? {
         ...p.sellerId,
-        id: p.sellerId.id || p.sellerId._id
+        id: p.sellerId.id || p.sellerId._id,
+        rating: p.sellerId.rating ?? p.rating ?? 0
     } : null)
 });
 

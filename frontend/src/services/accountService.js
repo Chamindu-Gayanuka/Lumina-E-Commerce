@@ -16,6 +16,16 @@ export const listSellers = async () => (await api.get('/sellers')).data.map(s =>
     accountStatus: s.accountStatus || s.status || 'Inactive'
 }));
 export const getSeller = async id => {
+    if (id) {
+        try {
+            return await d(api.get(`/public/sellers/${id}`));
+        } catch (e) {
+            if (e.response?.status !== 401 && e.response?.status !== 403) throw e;
+        }
+    }
+    return null;
+};
+export const getSellerAdmin = async id => {
     const data = await d(api.get(`/sellers/${id}`));
     return {
         ...data,

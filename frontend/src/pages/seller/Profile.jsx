@@ -1,28 +1,80 @@
 import React, {useEffect, useState} from "react";
-import {FaCircleCheck, FaEnvelope, FaPhone, FaStore} from "react-icons/fa6";
+import {FaCircleCheck, FaEnvelope, FaPhone, FaStore, FaTrash, FaUpload} from "react-icons/fa6";
 import Button from "../../components/ui/Button";
 import Input, {Textarea} from "../../components/ui/Input";
 import {PageSpinner} from "../../components/ui/Spinner";
 import {isPhone, required, validate} from "../../utils/validation";
-import {getProfile, updateSellerProfile} from "../../services/accountService";
+import {deleteAvatar, getProfile, updateProfile, updateSellerProfile} from "../../services/accountService";
 import {useToast} from "../../context/ToastContext";
 import {useAuth} from "../../context/AuthContext";
 import {formatNumber} from "../../utils/format";
 
 export default function SellerProfile() {
     const {notify} = useToast();
-    const {user} = useAuth();
+    const {user, updateUser} = useAuth();
     const sellerId = user?._id || user?.id;
 
     const [seller, setSeller] = useState(null);
     const [form, setForm] = useState({storeName: "", phone: "", address: "", description: ""});
     const [errors, setErrors] = useState({});
     const [saving, setSaving] = useState(false);
+    const [avatarSaving, setAvatarSaving] = useState(false);
+
+    const uploadAvatar = async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+            notify('Please choose a JPG, PNG, or WEBP image.', 'error');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            notify('Avatar must be 5 MB or smaller.', 'error');
+            return;
+        }
+        setAvatarSaving(true);
+        try {
+            const updated = await updateProfile(sellerId, {avatar: file});
+            const next = updated?.user || updated;
+            const avatarUrl = next?.avatar || seller?.avatar;
+            if (!avatarUrl) throw new Error('Avatar URL was not returned by the server');
+            setSeller(s => ({
+                ...(s || {}),
+                avatar: avatarUrl,
+                avatarPublicId: next?.avatarPublicId || s?.avatarPublicId || ''
+            }));
+            try {
+                updateUser({avatar: avatarUrl, avatarPublicId: next?.avatarPublicId || ''});
+            } catch (sessionError) {
+                console.error('Session avatar sync failed:', sessionError);
+            }
+            notify('Store avatar updated.', 'success');
+        } catch (error) {
+            console.error('Seller avatar upload failed:', error?.response?.data || error);
+            notify(error?.response?.data?.message || 'Unable to upload avatar.', 'error');
+        } finally {
+            setAvatarSaving(false);
+            event.target.value = '';
+        }
+    };
+
+    const removeAvatar = async () => {
+        setAvatarSaving(true);
+        try {
+            await deleteAvatar();
+            setSeller(s => ({...s, avatar: ''}));
+            updateUser({avatar: '', avatarPublicId: ''});
+            notify('Store avatar removed.', 'success');
+        } catch {
+            notify('Unable to remove avatar.', 'error');
+        } finally {
+            setAvatarSaving(false);
+        }
+    };
 
     useEffect(() => {
         getProfile().then((response) => {
             const s = response?.user || response;
-            setSeller(s);
+            setSeller({responseRate: 0, rating: 0, ...s});
             if (s) {
                 setForm({
                     storeName: s.storeName || "",
@@ -160,9 +212,22 @@ export default function SellerProfile() {
                                     background: `linear-gradient(135deg, ${seller.accent || "#0d9488"}, #134e4a)`,
                                 }}
                             >
-                                {form.storeName.charAt(0) || "?"}
+                                {seller.avatar ? <img src={seller.avatar} alt={form.storeName}
+                                                      className="h-full w-full rounded-2xl object-cover"/> : (form.storeName.charAt(0) || "?")}
                             </span>
                             <div className="min-w-0 flex-1">
+                                <div className="mb-2 flex flex-wrap gap-2">
+                                    <label
+                                        className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-bold text-primary-700 hover:bg-primary-50">
+                                        <FaUpload size={11}/> {avatarSaving ? 'Uploading…' : 'Upload avatar'}
+                                        <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+                                               onChange={uploadAvatar} disabled={avatarSaving}/>
+                                    </label>
+                                    {seller.avatar &&
+                                        <button type="button" onClick={removeAvatar} disabled={avatarSaving}
+                                                className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50">
+                                            <FaTrash size={11}/> Remove</button>}
+                                </div>
                                 <p className="font-extrabold text-ink-900 [overflow-wrap:anywhere]">
                                     {form.storeName || "Your store"}
                                 </p>

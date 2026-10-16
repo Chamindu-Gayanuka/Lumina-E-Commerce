@@ -241,7 +241,7 @@ export default function SellerOrderDetails() {
                                     size={12}
                                 />
                                 <span className="min-w-0 [overflow-wrap:anywhere]">
-                                    {order.address?.name || "—"}
+                                    {order.address?.name || "-"}
                                 </span>
                             </p>
                             <p className="flex items-start gap-2 text-slate-500">
@@ -266,7 +266,7 @@ export default function SellerOrderDetails() {
                                     size={12}
                                 />
                                 <span className="min-w-0 [overflow-wrap:anywhere]">
-                                    {order.address?.phone || "—"}
+                                    {order.address?.phone || "-"}
                                 </span>
                             </p>
                         </div>

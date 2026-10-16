@@ -183,6 +183,13 @@ export default function ProductDetails() {
             ? [product.description]
             : [];
 
+    const ratingBreakdown = reviews.reduce((counts, review) => {
+        const star = Number(review.rating);
+        if (star >= 1 && star <= 5) counts[star] = (counts[star] || 0) + 1;
+        return counts;
+    }, {});
+    const reviewTotal = reviews.length || product.reviewCount || 0;
+
     return (
         <div className="lum-container pb-20 pt-6">
 
@@ -433,7 +440,9 @@ export default function ProductDetails() {
                                 <span
                                     className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-base font-extrabold text-primary-700 ring-1 ring-slate-200"
                                 >
-                                    {product.seller.storeName?.charAt(0)}
+                                    {product.seller.avatar ?
+                                        <img src={product.seller.avatar} alt={product.seller.storeName}
+                                             className="h-full w-full rounded-full object-cover"/> : product.seller.storeName?.charAt(0)}
                                 </span>
 
                                 <div>
@@ -763,7 +772,7 @@ export default function ProductDetails() {
                             />
 
                             <p className="mt-2 text-xs text-slate-400">
-                                Based on {product.reviewCount} reviews
+                                Based on {reviewTotal} reviews
                             </p>
 
                             <div className="mt-5 space-y-2">
@@ -771,13 +780,13 @@ export default function ProductDetails() {
                                 {[5, 4, 3, 2, 1].map((star) => {
 
                                     const count =
-                                        product.ratingBreakdown?.[star] || 0;
+                                        ratingBreakdown[star] || 0;
 
                                     const pct =
-                                        product.reviewCount
+                                        reviewTotal
                                             ? Math.round(
                                                 (count /
-                                                    product.reviewCount) *
+                                                    reviewTotal) *
                                                 100
                                             )
                                             : 0;

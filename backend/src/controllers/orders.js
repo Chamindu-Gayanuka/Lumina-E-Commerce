@@ -27,6 +27,9 @@ export async function create(req, res) {
         return {...i, name: p.name, price: p.price, sellerId: p.sellerId}
     }), subtotal = lines.reduce((s, i) => s + i.price * i.qty, 0);
     for (const i of lines) await Product.updateOne({_id: i.productId}, {$inc: {stock: -i.qty, soldCount: i.qty}});
+    const sellerIds = [...new Set(lines.map(i => String(i.sellerId)).filter(Boolean))];
+    const sellerUsers = await User.find({_id: {$in: sellerIds}}).select('sellerSettings email name');
+    const initialStatus = sellerUsers.length && sellerUsers.every(s => s.sellerSettings?.autoAccept) ? 'Processing' : 'Pending';
     const created = await Order.create({
         customerId: req.user.sub,
         items: lines,
@@ -34,11 +37,11 @@ export async function create(req, res) {
         deliveryFee,
         paymentMethod,
         subtotal,
-        totalAmount: subtotal + deliveryFee
+        totalAmount: subtotal + deliveryFee,
+        status: initialStatus
     });
     const customerUser = await User.findById(req.user.sub).select('name email');
-    const sellerIds = [...new Set(lines.map(i => String(i.sellerId)).filter(Boolean))];
-    const sellers = await User.find({_id: {$in: sellerIds}}).select('name email');
+    const sellers = sellerUsers;
     if (customerUser) orderStatusEmail(created, customerUser, 'customer');
     sellers.forEach(seller => orderStatusEmail(created, seller, 'seller'));
     res.status(201).json(created);
