@@ -30,7 +30,21 @@ export default function StorePage() {
     const [category, setCategory] = useState("all");
     const [sort, setSort] = useState("newest");
     const [page, setPage] = useState(1);
-    const [following, setFollowing] = useState(false);
+    const [following, setFollowing] = useState(() => Boolean(storeId && JSON.parse(localStorage.getItem('lumina_followed_stores') || '[]').includes(storeId)));
+
+    const toggleFollow = () => {
+        const ids = JSON.parse(localStorage.getItem('lumina_followed_stores') || '[]');
+        const next = following ? ids.filter(id => id !== storeId) : [...new Set([...ids, storeId])];
+        localStorage.setItem('lumina_followed_stores', JSON.stringify(next));
+        setFollowing(!following);
+        window.dispatchEvent(new CustomEvent('lumina:store-followed', {
+            detail: {
+                sellerId: storeId,
+                following: !following
+            }
+        }));
+        notify(!following ? 'Store followed. Its products are now featured for you.' : 'Store unfollowed.');
+    };
 
     useEffect(() => {
         let alive = true;
@@ -40,7 +54,7 @@ export default function StorePage() {
         setLoading(true);
         setCategory("all");
         setPage(1);
-        setFollowing(false);
+        setFollowing(Boolean(storeId && JSON.parse(localStorage.getItem('lumina_followed_stores') || '[]').includes(storeId)));
 
         async function loadStore() {
             try {
@@ -204,7 +218,11 @@ export default function StorePage() {
                         }}
                         aria-hidden="true"
                     >
-                        {storeName.charAt(0)}
+                        {seller.avatar ?
+                            <img src={seller.avatar} alt={storeName} className="h-full w-full rounded-2xl object-cover"
+                                 onError={(event) => {
+                                     event.currentTarget.style.display = 'none';
+                                 }}/> : storeName.charAt(0)}
                     </div>
 
                     <div className="flex min-w-0 flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -231,6 +249,9 @@ export default function StorePage() {
                                     {seller.description}
                                 </p>
                             )}
+                            {seller.sellerSettings?.holiday &&
+                                <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700">This
+                                    store is temporarily on holiday. New orders may be delayed.</p>}
                         </div>
 
                         {/* Actions stack on mobile, inline on large screens */}
@@ -246,17 +267,7 @@ export default function StorePage() {
                                         ? <FaCheck size={12}/>
                                         : <FaPlus size={12}/>
                                 }
-                                onClick={() => {
-                                    const nextFollowing = !following;
-                                    setFollowing(nextFollowing);
-
-                                    notify(
-                                        nextFollowing
-                                            ? `Following ${storeName}`
-                                            : "Unfollowed store",
-                                        "info"
-                                    );
-                                }}
+                                onClick={toggleFollow}
                             >
                                 {following ? "Following" : "Follow"}
                             </Button>
@@ -271,12 +282,9 @@ export default function StorePage() {
                                         className="text-slate-400"
                                     />
                                 }
-                                onClick={() =>
-                                    notify(
-                                        `Messaging is a future feature - seller email: ${seller.email}`,
-                                        "info"
-                                    )
-                                }
+                                onClick={() => {
+                                    window.location.href = `mailto:${seller.email}?subject=${encodeURIComponent(`Inquiry about ${storeName}`)}`;
+                                }}
                             >
                                 Contact
                             </Button>

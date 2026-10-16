@@ -40,6 +40,14 @@ const schema = new mongoose.Schema({
         storeName: String,
         businessAddress: String,
         description: String,
+        deliveryFee: {type: Number, default: 0, min: 0},
+        sellerSettings: {
+            emailOrders: {type: Boolean, default: true},
+            stockAlerts: {type: Boolean, default: true},
+            weeklyDigest: {type: Boolean, default: false},
+            autoAccept: {type: Boolean, default: false},
+            holiday: {type: Boolean, default: false}
+        },
         approvalStatus: {
             type: String,
             enum: ['Pending', 'Approved', 'Rejected'],

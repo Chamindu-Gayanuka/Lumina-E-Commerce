@@ -6,6 +6,10 @@ const schema = new mongoose.Schema({
             required: true
         },
         description: String,
+        specifications: [{
+            label: String,
+            value: String
+        }],
         price: {
             type: Number,
             min: 0,

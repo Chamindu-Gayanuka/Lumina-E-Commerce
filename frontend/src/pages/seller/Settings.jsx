@@ -3,7 +3,7 @@ import {FaBell, FaToggleOff, FaToggleOn, FaTruck} from "react-icons/fa6";
 import Button from "../../components/ui/Button";
 import {useToast} from "../../context/ToastContext";
 import {useAuth} from "../../context/AuthContext";
-import {getSeller, updateSellerProfile} from "../../services/accountService";
+import {getProfile, updateSellerProfile} from "../../services/accountService";
 import {DELIVERY_FEE} from "../../utils/constants";
 
 function Toggle({on, onChange, label, desc, icon}) {
@@ -48,8 +48,9 @@ export default function SellerSettings() {
     useEffect(() => {
         let alive = true;
         if (!sellerId) return undefined;
-        getSeller(sellerId)
-            .then((sr) => {
+        getProfile()
+            .then((response) => {
+                const sr = response?.user || response;
                 if (alive && sr) setDeliveryMode(sr.deliveryFee > 0 ? "charge" : "free");
             })
             .catch(() => {
@@ -79,14 +80,40 @@ export default function SellerSettings() {
         }
     };
 
-    const [prefs, setPrefs] = useState({
-        emailOrders: true,
-        stockAlerts: true,
-        weeklyDigest: false,
-        autoAccept: false,
-        holiday: false,
+    const [prefs, setPrefs] = useState(() => {
+        try {
+            return {
+                ...{
+                    emailOrders: true,
+                    stockAlerts: true,
+                    weeklyDigest: false,
+                    autoAccept: false,
+                    holiday: false
+                }, ...JSON.parse(localStorage.getItem(`lumina_seller_prefs_${sellerId}`) || '{}')
+            };
+        } catch {
+            return {emailOrders: true, stockAlerts: true, weeklyDigest: false, autoAccept: false, holiday: false};
+        }
     });
     const set = (key) => (v) => setPrefs((p) => ({...p, [key]: v}));
+    useEffect(() => {
+        getProfile().then(response => {
+            if (response?.user?.sellerSettings) setPrefs(p => ({...p, ...response.user.sellerSettings}));
+        });
+    }, []);
+    useEffect(() => {
+        if (!sellerId) return;
+        const timer = setTimeout(() => {
+            localStorage.setItem(`lumina_seller_prefs_${sellerId}`, JSON.stringify(prefs));
+            updateSellerProfile(sellerId, {sellerSettings: prefs}).catch(() => {
+            });
+        }, 250);
+        return () => clearTimeout(timer);
+    }, [prefs, sellerId]);
+    const saveSettings = () => {
+        localStorage.setItem(`lumina_seller_prefs_${sellerId}`, JSON.stringify(prefs));
+        updateSellerProfile(sellerId, {sellerSettings: prefs}).then(() => notify('Seller settings saved successfully.', 'success')).catch(() => notify('Unable to save seller settings.', 'error'));
+    };
 
     return (
         <div className="mx-auto w-full max-w-3xl">
@@ -140,7 +167,7 @@ export default function SellerSettings() {
                         on={prefs.autoAccept}
                         onChange={set("autoAccept")}
                         label="Auto-accept COD orders"
-                        desc="Skip manual confirmation — orders jump straight to Processing."
+                        desc="Skip manual confirmation - orders jump straight to Processing."
                     />
                     <Toggle
                         on={prefs.holiday}
@@ -158,8 +185,8 @@ export default function SellerSettings() {
                 </h2>
                 <p className="mt-3 text-sm leading-relaxed text-slate-500">
                     You decide whether buyers pay for delivery. When charged, a flat Rs. {DELIVERY_FEE} is added{" "}
-                    <span className="font-bold text-ink-700">once per order</span> containing your products — never
-                    stacked per item — and shown in the cart and checkout before payment.
+                    <span className="font-bold text-ink-700">once per order</span> containing your products - never
+                    stacked per item - and shown in the cart and checkout before payment.
                 </p>
 
                 <div
@@ -171,7 +198,7 @@ export default function SellerSettings() {
                         {
                             key: "free",
                             title: "Free delivery",
-                            desc: "Buyers see a “Free delivery” badge on your store and listings — great for conversion.",
+                            desc: "Buyers see a “Free delivery” badge on your store and listings - great for conversion.",
                         },
                         {
                             key: "charge",
@@ -215,7 +242,7 @@ export default function SellerSettings() {
 
                 <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-xs leading-relaxed text-slate-400">
-                        Applies to new carts immediately — already-placed orders are never re-priced.
+                        Applies to new carts immediately - already-placed orders are never re-priced.
                     </p>
                     <Button
                         size="sm"
@@ -241,14 +268,13 @@ export default function SellerSettings() {
                     <Button
                         variant="dangerSoft"
                         className="w-full shrink-0 sm:w-auto"
-                        onClick={() =>
-                            notify(
-                                "Store pause is enforced by the backend in the next phase.",
-                                "info"
-                            )
-                        }
+                        onClick={() => {
+                            const next = !prefs.holiday;
+                            setPrefs((p) => ({...p, holiday: next}));
+                            notify(next ? "Store closed. Buyers will see your holiday notice." : "Store reopened. Buyers can shop again.", "success");
+                        }}
                     >
-                        Close store
+                        {prefs.holiday ? "Reopen store" : "Close store"}
                     </Button>
                 </div>
             </section>
@@ -257,7 +283,7 @@ export default function SellerSettings() {
             <div className="mt-6 flex flex-col sm:flex-row sm:justify-end">
                 <Button
                     className="w-full sm:w-auto"
-                    onClick={() => notify("Preferences saved to this browser (demo)")}
+                    onClick={saveSettings}
                 >
                     Save Settings
                 </Button>

@@ -4,7 +4,7 @@ import {FaArrowRight} from "react-icons/fa6";
 import Button from "../../components/ui/Button";
 import CategoryIcon from "../../components/ui/CategoryIcon";
 import ProductGrid from "../../components/product/ProductGrid";
-import {getFeaturedProducts, getPopularProducts} from "../../services/productService";
+import {getFeaturedProducts, getPopularProducts, getSellerProducts} from "../../services/productService";
 import {listCategories} from "../../services/accountService";
 
 const CATEGORY_ICONS = {
@@ -45,8 +45,18 @@ export default function Home() {
             setFeatured(f);
             setPopular(p);
         });
+        const refreshFollowed = async () => {
+            const ids = JSON.parse(localStorage.getItem('lumina_followed_stores') || '[]');
+            if (!ids.length) return;
+            const followed = (await Promise.all(ids.map(id => getSellerProducts(id).catch(() => [])))).flat();
+            if (alive && followed.length) setFeatured(prev => [...followed, ...(prev || []).filter(p => !followed.some(f => f.id === p.id))].slice(0, 12));
+        };
+        const onFollowed = () => refreshFollowed();
+        window.addEventListener('lumina:store-followed', onFollowed);
         listCategories().then((cats) => alive && setCategories(cats.filter((c) => c.status === "Active")));
+        refreshFollowed();
         return () => {
+            window.removeEventListener('lumina:store-followed', onFollowed);
             alive = false;
         };
     }, []);

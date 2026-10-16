@@ -31,6 +31,8 @@ export const user = async (req, res) => {
 export const updateUser = async (req, res) => {
     const allowed = {
         name: req.body.name,
+        deliveryFee: req.body.deliveryFee !== undefined ? Number(req.body.deliveryFee) : undefined,
+        sellerSettings: req.body.sellerSettings,
         phone: req.body.phone,
         storeName: req.body.storeName,
         businessAddress: req.body.businessAddress,
@@ -144,7 +146,6 @@ export const stats = async (req, res) => {
         snapshot: {
             users,
             products,
-            totalUsers: users,
             totalCustomers: customers,
             totalSellers: sellers,
             pendingSellers,
@@ -155,6 +156,7 @@ export const stats = async (req, res) => {
             lowStock: await Product.countDocuments({stock: {$gt: 0, $lte: 5}}),
             outOfStock: await Product.countDocuments({stock: 0}),
             avgOrderValue: orders.length ? revenue / orders.length : 0,
+            totalUsers: users,
             orders: orders.length,
             revenue,
             ordersByStatus,

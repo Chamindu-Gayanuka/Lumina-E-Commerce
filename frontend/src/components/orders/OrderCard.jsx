@@ -56,7 +56,7 @@ export default function OrderCard({
                     </h3>
 
                     <p className="mt-0.5 text-xs text-slate-400">
-                        Placed on {placedAt ? formatDate(placedAt) : "—"}
+                        Placed on {placedAt ? formatDate(placedAt) : "-"}
                     </p>
                 </div>
 

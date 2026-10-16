@@ -69,17 +69,11 @@ export function AuthProvider({children}) {
 
     const updateUser = useCallback(
         (patch) => {
-            setSession((s) => {
-                const next = {
-                    ...s,
-                    user: {
-                        ...s.user,
-                        ...patch
-                    }
-                };
-
+            setSession((current) => {
+                if (!current) return current;
+                const next = {...current, user: {...current.user, ...patch}};
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-
+                window.dispatchEvent(new CustomEvent('lumina:user-updated', {detail: next.user}));
                 return next;
             });
         },

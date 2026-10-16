@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import Product from '../models/Product.js';
 import Category from '../models/Category.js';
 import Review from '../models/Review.js';
+import User from '../models/User.js';
+import Order from '../models/Order.js';
 import {uploadToCloudinary} from '../utils/cloudinary.js';
 import cloudinary from '../config/cloudinary.js';
 
@@ -106,6 +108,28 @@ export const remove = async (req, res) => {
     const p = await Product.findOneAndDelete(filter);
     if (p?.imagePublicId) cloudinary.uploader.destroy(p.imagePublicId).catch(console.error);
     res.status(204).end()
+};
+export const publicSeller = async (req, res) => {
+    const seller = await User.findOne({
+        _id: req.params.id,
+        role: 'Seller',
+        approvalStatus: 'Approved'
+    }).select('name email phone storeName businessAddress description avatar deliveryFee approvalStatus createdAt sellerSettings');
+    if (!seller) return res.status(404).json({message: 'Store not found'});
+    const products = await Product.find({
+        sellerId: seller._id,
+        status: 'Active'
+    }).populate('sellerId', 'name storeName avatar');
+    const ratedProducts = products.filter(p => Number(p.rating) > 0);
+    const averageRating = ratedProducts.length ? ratedProducts.reduce((sum, p) => sum + Number(p.rating), 0) / ratedProducts.length : 0;
+    const completedOrders = await Order.countDocuments({'items.sellerId': seller._id, status: 'Delivered'});
+    const data = seller.toObject();
+    data.productsCount = products.length;
+    data.ordersCompleted = completedOrders;
+    data.responseRate = data.responseRate ?? 100;
+    data.joinedAt = data.createdAt;
+    data.rating = averageRating;
+    res.json({seller: data, products});
 };
 export const categories = async (req, res) => res.json(await Category.find({status: 'Active'}));
 export const createCategory = async (req, res) => res.status(201).json(await Category.create(req.body));
